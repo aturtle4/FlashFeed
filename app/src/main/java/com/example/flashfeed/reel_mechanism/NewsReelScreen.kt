@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,38 +52,56 @@ fun NewsReelScreen(newsList: List<NewsArticle>) {
         var isLiked by remember { mutableStateOf(false) } // Track like state
 
         // Reset displayed words when swiping to a new page
-        LaunchedEffect(page) {
-            displayedWords = ""  // Reset the word-by-word display
+        LaunchedEffect(pagerState.currentPage) {
+            val page = pagerState.currentPage // Current page
+            val news = newsList[page] // Ensure correct news is fetched
+
+            // Log page changes
+            Log.d("NewsReel", "=== PAGE CHANGED TO: $page ===")
+            Log.d("NewsReel", "Title: ${news.title}")
+            Log.d("NewsReel", "Short Desc: ${news.shortDescription}")
+
+            displayedWords = ""  // Reset displayed words
             tts.stop()
+            tts.language = Locale("hi", "IN")
 
-            // Set up a listener for word progress
+            kotlinx.coroutines.delay(100) // Allow UI to settle
+
+            val words = news.shortDescription.split(" ")
+            var currentWordIndex = 0
+
+            Log.d("NewsReel", "Words List Size: ${words.size}")
+
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                var currentWordIndex = 0
-
                 override fun onStart(utteranceId: String?) {
-                    displayedWords = ""  // Reset for a new read
+                    displayedWords = ""
+                    Log.d("TTS", "[Page: $page] Started Speaking: ${news.shortDescription}")
                 }
 
                 override fun onDone(utteranceId: String?) {
-                    isSpeaking = false  // Reading finished
+                    isSpeaking = false
+                    Log.d("TTS", "[Page: $page] Finished Speaking")
                 }
 
-                override fun onError(utteranceId: String?) {}
+                override fun onError(utteranceId: String?) {
+                    Log.e("TTS", "[Page: $page] Error in TTS")
+                }
 
                 override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
                     if (currentWordIndex < words.size) {
                         displayedWords = words.take(currentWordIndex + 1).joinToString(" ")
+                        Log.d("TTS", "[Page: $page] Speaking Word: ${words[currentWordIndex]}")
                         currentWordIndex++
                     }
                 }
             })
 
-            // Start speaking with a unique ID
             val params = HashMap<String, String>()
-            params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = "news_desc"
+            params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = "news_desc_$page"
             tts.speak(news.shortDescription, TextToSpeech.QUEUE_FLUSH, params)
             isSpeaking = true
         }
+
 
         Box(modifier = Modifier
             .fillMaxSize()
@@ -102,7 +121,8 @@ fun NewsReelScreen(newsList: List<NewsArticle>) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .align(Alignment.Center),
+                    .align(Alignment.BottomCenter)
+                    .padding(top = 300.dp, start = 16.dp,end = 30.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -139,7 +159,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(end = 16.dp, top = 290.dp)
                     .align(Alignment.CenterEnd),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.End

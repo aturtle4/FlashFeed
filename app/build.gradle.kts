@@ -56,4 +56,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.accompanist.pager)
+    implementation(libs.accompanist.pager.indicators)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.material3)
 }

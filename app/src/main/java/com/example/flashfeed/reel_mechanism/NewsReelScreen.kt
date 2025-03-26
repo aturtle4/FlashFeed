@@ -1,5 +1,6 @@
 package com.example.flashfeed.reel_mechanism
 
+import NewsReelViewModel
 import android.content.Context
 import android.content.Intent
 import android.speech.tts.TextToSpeech
@@ -8,7 +9,6 @@ import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.VerticalPager
@@ -22,34 +22,54 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.rememberAsyncImagePainter
 import com.example.flashfeed.R
 import java.util.*
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NewsReelScreen(newsList: List<NewsArticle>) {
+fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = remember { NewsReelViewModel() }) {
     val pagerState = rememberPagerState(pageCount = { newsList.size })
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val tts = remember { TextToSpeech(context) { } }
     var isSpeaking by remember { mutableStateOf(false) }
     var displayedWords by remember { mutableStateOf("") }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> {
+                    tts.stop()
+                    isSpeaking = false
+                    Log.d("TTS", "App moved to background, TTS stopped")
+                }
+                Lifecycle.Event.ON_DESTROY -> {
+                    tts.stop()
+                    tts.shutdown()
+                    Log.d("TTS", "TTS Shutdown on Destroy")
+                }
+                else -> {}
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
-            tts.stop()
-            tts.shutdown()
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
     VerticalPager(state = pagerState) { page ->
         val news = newsList[page]
         val words = news.shortDescription.split(" ") // Split into words
-        var isLiked by remember { mutableStateOf(false) } // Track like state
+        val isLiked = viewModel.isLiked(news.id.toString())
 
         // Reset displayed words when swiping to a new page
         LaunchedEffect(pagerState.currentPage) {
@@ -106,6 +126,29 @@ fun NewsReelScreen(newsList: List<NewsArticle>) {
         Box(modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        viewModel.toggleLike(news.id.toString())
+                    },
+                    onLongPress = {
+                        openArticleInApp(context, news.articleLink)
+                    },
+//                    onTap = {
+//                        if (isSpeaking) {
+//                                    tts.stop()
+//                                    isSpeaking = false
+//                                    displayedWords = ""  // Reset
+//                                } else {
+//                                    displayedWords = ""  // Reset before restarting
+//                                    val params = HashMap<String, String>()
+//                                    params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = "news_desc"
+//                                    tts.speak(news.shortDescription, TextToSpeech.QUEUE_FLUSH, params)
+//                                    isSpeaking = true
+//                                }
+//                    }
+                )
+            }
         ) {
             // Background Image with Blur Effect
             Image(
@@ -165,7 +208,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>) {
                 horizontalAlignment = Alignment.End
             ) {
                 // Like Button
-                IconButton(onClick = { isLiked = !isLiked }) {
+                IconButton(onClick = { viewModel.toggleLike(news.id.toString()) }) {
                     Icon(
                         painter = painterResource(id = if (isLiked) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline),
                         contentDescription = "Like",
@@ -188,30 +231,6 @@ fun NewsReelScreen(newsList: List<NewsArticle>) {
                     )
                 }
             }
-
-
-            // Tap to Pause/Resume TTS
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .pointerInput(Unit) {
-//                        detectTapGestures(
-//                            onTap = {
-//                                if (isSpeaking) {
-//                                    tts.stop()
-//                                    isSpeaking = false
-//                                    displayedWords = ""  // Reset
-//                                } else {
-//                                    displayedWords = ""  // Reset before restarting
-//                                    val params = HashMap<String, String>()
-//                                    params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = "news_desc"
-//                                    tts.speak(news.shortDescription, TextToSpeech.QUEUE_FLUSH, params)
-//                                    isSpeaking = true
-//                                }
-//                            }
-//                        )
-//                    }
-//            )
         }
     }
 }
@@ -224,4 +243,11 @@ fun shareNews(context: Context, articleLink: String) {
         type = "text/plain"
     }
     context.startActivity(Intent.createChooser(shareIntent, "Share via"))
+}
+
+fun openArticleInApp(context: Context, articleLink: String){
+    val intent = Intent(Intent.ACTION_VIEW).apply{
+        data = android.net.Uri.parse(articleLink)
+    }
+    context.startActivity(intent)
 }

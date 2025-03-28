@@ -1,18 +1,22 @@
 package com.example.flashfeed
 
 import android.os.Bundle
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import com.example.flashfeed.ui.theme.FlashFeedTheme
 import com.example.flashfeed.reel_mechanism.NewsArticle
 import com.example.flashfeed.reel_mechanism.NewsReelScreen
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
         setContent {
             FlashFeedTheme {

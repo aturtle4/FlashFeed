@@ -1,4 +1,4 @@
-package com.example.flashfeed.Components
+package com.example.flashfeed.Profile
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*

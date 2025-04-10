@@ -2,35 +2,160 @@ package com.example.flashfeed.Profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.flashfeed.Components.CategoryViewModel
-
 
 @Composable
 fun Profile(viewModel: CategoryViewModel) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
-    ) {
-        CategorySelector(viewModel = viewModel)
+    var drawerOpen by remember { mutableStateOf(false) }
+    val inverseOnSurface = MaterialTheme.colorScheme.onSurface.run {
+        Color(1f - red, 1f - green, 1f - blue, alpha)
     }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Main Content
+        Column(modifier = Modifier.fillMaxSize()) {
+            ProfileHeader(userName = "aTurtle4")
+            // Add your main profile body here
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            contentAlignment = Alignment.TopEnd
+        ) {
+            IconButton(onClick = { drawerOpen = !drawerOpen }) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    modifier = Modifier.size(36.dp),
+                    tint = inverseOnSurface,
+                    contentDescription = "Settings-Menu"
+                )
+            }
+        }
+
+        // Click-away background when drawer is open
+        if (drawerOpen) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f))
+                    .pointerInput(Unit) {
+                        detectTapGestures(onTap = { drawerOpen = false })
+                    }
+            )
+        }
+
+        // Right Drawer (Overlayed)
+        if (drawerOpen) {
+            Surface(
+                tonalElevation = 4.dp,
+                shadowElevation = 8.dp,
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(280.dp)
+                    .align(Alignment.TopEnd)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        text = "Settings",
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    Divider(modifier = Modifier.padding(bottom = 8.dp))
+
+                    CategorySelector(viewModel = viewModel)
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun ProfileHeader(
+    userName: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(300.dp)
+            .background(Color.White)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Top Row: "Profile" text and menu icon
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Profile",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 25.sp,
+                    color = Color.Gray
+                )
+
+            }
+
+            // Center: User icon and name
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Profile Image",
+                    modifier = Modifier.size(175.dp),
+                    tint = Color.Gray
+                )
+                Text(
+                    text = userName,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    color = Color.Gray
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SavedArticles(){
+
 }
 
 
@@ -67,7 +192,7 @@ fun CategorySelector(viewModel: CategoryViewModel) {
         if (isExpanded) {
             LazyColumn(
                 modifier = Modifier
-                    .weight(1f) // Takes remaining space within parent
+                    .weight(1f)
                     .padding(horizontal = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {

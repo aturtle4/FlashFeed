@@ -29,7 +29,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.flashfeed.Components.CategoryViewModel
+import com.example.flashfeed.Profile.CategoryViewModel
 import com.example.flashfeed.Explore.Explore
 import com.example.flashfeed.Home.Home
 import com.example.flashfeed.Profile.Profile

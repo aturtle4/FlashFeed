@@ -1,6 +1,6 @@
 package com.example.flashfeed.reel_mechanism
 
-import NewsReelViewModel
+import com.example.flashfeed.reel_mechanism.NewsReelViewModel
 import android.content.Context
 import android.content.Intent
 import android.speech.tts.TextToSpeech
@@ -13,6 +13,9 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -221,6 +224,22 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
                             .pointerInput(Unit) {}
                     )
                 }
+                // Save Button
+                val isSaved = viewModel.isArticleSaved(news.id.toString())
+                IconButton(onClick = {
+                    if (isSaved) {
+                        viewModel.removeSavedArticle(news.id.toString())
+                    } else {
+                        viewModel.saveArticle(news)
+                    }
+                }) {
+                    Icon(
+                        imageVector = (if (isLiked) Icons.Default.BookmarkBorder else Icons.Default.BookmarkBorder),
+                        contentDescription = "Save",
+                        tint = if (isSaved) Color.Yellow else Color.White,
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
 
                 // Share Button
                 IconButton(onClick = { shareNews(context, news.articleLink) }) {
@@ -233,6 +252,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
                             .pointerInput(Unit) {}
                     )
                 }
+
             }
         }
     }

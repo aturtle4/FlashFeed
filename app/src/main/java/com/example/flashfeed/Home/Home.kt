@@ -11,8 +11,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.flashfeed.Components.CategoryViewModel
-import com.example.flashfeed.Components.CategoryItem
+import com.example.flashfeed.Profile.CategoryViewModel
+import com.example.flashfeed.Profile.CategoryItem
 import com.example.flashfeed.reel_mechanism.NewsArticle
 import com.example.flashfeed.reel_mechanism.NewsReelScreen
 

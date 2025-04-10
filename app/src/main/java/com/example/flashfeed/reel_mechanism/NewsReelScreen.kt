@@ -72,20 +72,15 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
         val isLiked = viewModel.isLiked(news.id.toString())
 
         // Reset displayed words when swiping to a new page
-        LaunchedEffect(pagerState.currentPage) {
-            val page = pagerState.currentPage // Current page
-            val news = newsList[page] // Ensure correct news is fetched
+        LaunchedEffect(pagerState.currentPage, newsList) {
+            val page = pagerState.currentPage
+            val news = newsList[page]
 
-            // Log page changes
-            Log.d("NewsReel", "=== PAGE CHANGED TO: $page ===")
-            Log.d("NewsReel", "Title: ${news.title}")
-            Log.d("NewsReel", "Short Desc: ${news.shortDescription}")
-
-            displayedWords = ""  // Reset displayed words
+            displayedWords = ""
             tts.stop()
             tts.language = Locale("hi", "IN")
 
-            kotlinx.coroutines.delay(100) // Allow UI to settle
+            kotlinx.coroutines.delay(100)
 
             val words = news.shortDescription.split(" ")
             var currentWordIndex = 0
@@ -103,17 +98,24 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
                     Log.d("TTS", "[Page: $page] Finished Speaking")
                 }
 
+                @Deprecated("Deprecated in Java")
                 override fun onError(utteranceId: String?) {
                     Log.e("TTS", "[Page: $page] Error in TTS")
                 }
 
                 override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
                     if (currentWordIndex < words.size) {
-                        displayedWords = words.take(currentWordIndex + 1).joinToString(" ")
+                        val visibleWords = words.subList(
+                            maxOf(0, currentWordIndex - 4),
+                            currentWordIndex + 1
+                        )
+                        displayedWords = visibleWords.joinToString(" ")
                         Log.d("TTS", "[Page: $page] Speaking Word: ${words[currentWordIndex]}")
                         currentWordIndex++
                     }
                 }
+
+
             })
 
             val params = HashMap<String, String>()
@@ -121,6 +123,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
             tts.speak(news.shortDescription, TextToSpeech.QUEUE_FLUSH, params)
             isSpeaking = true
         }
+
 
 
         Box(modifier = Modifier
@@ -181,7 +184,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
-                    .padding(bottom = 20.dp)
+                    .padding(bottom = 60.dp)
                     .align(Alignment.BottomStart),
                 verticalArrangement = Arrangement.Bottom
             ) {

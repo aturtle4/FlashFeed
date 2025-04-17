@@ -13,16 +13,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.flashfeed.Profile.CategoryViewModel
 import com.example.flashfeed.Profile.CategoryItem
+import com.example.flashfeed.Profile.NewsReelViewModel
 import com.example.flashfeed.reel_mechanism.NewsArticle
 import com.example.flashfeed.reel_mechanism.NewsReelScreen
 
 @Composable
-fun Home(categoryViewModel: CategoryViewModel) {
+fun Home(categoryViewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) {
     val selectedCategories = categoryViewModel.getSelectedCategories()
     var selectedTab by remember { mutableStateOf(selectedCategories.firstOrNull()?.name ?: "Trending") }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        GetRespNews(category = selectedTab)
+        GetRespNews(category = selectedTab, newsReelViewModel)
         TopBar(
             categories = selectedCategories,
             selectedTab = selectedTab,
@@ -78,7 +79,7 @@ fun TopBar(
 }
 
 @Composable
-fun GetRespNews(category: String) {
+fun GetRespNews(category: String, viewModel: NewsReelViewModel) {
     val dummyNewsArticles = listOf(
         NewsArticle(
             id = 1,
@@ -214,5 +215,5 @@ fun GetRespNews(category: String) {
         )
     )
     val filteredNews = dummyNewsArticles.filter { it.category == category }
-    NewsReelScreen(newsList = filteredNews)
+    NewsReelScreen(newsList = filteredNews, viewModel)
 }

@@ -32,6 +32,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.flashfeed.Profile.CategoryViewModel
 import com.example.flashfeed.Explore.Explore
 import com.example.flashfeed.Home.Home
+import com.example.flashfeed.Profile.NewsReelViewModel
 import com.example.flashfeed.Profile.Profile
 import com.example.flashfeed.ui.theme.FlashFeedTheme
 
@@ -65,6 +66,7 @@ fun MainScreen() {
     val inactiveColor = MaterialTheme.colorScheme.surfaceVariant
 
     val categoryViewModel : CategoryViewModel = viewModel()
+    val newsReelViewModel : NewsReelViewModel = viewModel()
 
     Scaffold(
         floatingActionButton = {
@@ -107,9 +109,9 @@ fun MainScreen() {
             startDestination = Screen.Home.route,
             modifier = Modifier.padding(paddingValues)
         ) {
-            composable(Screen.Home.route) { Home(categoryViewModel) }
+            composable(Screen.Home.route) { Home(categoryViewModel, newsReelViewModel) }
             composable(Screen.Explore.route) { Explore() }
-            composable(Screen.Profile.route) { Profile(categoryViewModel) }
+            composable(Screen.Profile.route) { Profile(categoryViewModel, newsReelViewModel ) }
         }
     }
 }

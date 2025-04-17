@@ -1,6 +1,6 @@
 package com.example.flashfeed.reel_mechanism
 
-import com.example.flashfeed.reel_mechanism.NewsReelViewModel
+import com.example.flashfeed.Profile.NewsReelViewModel
 import android.content.Context
 import android.content.Intent
 import android.speech.tts.TextToSpeech
@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -38,7 +37,7 @@ import java.util.*
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = remember { NewsReelViewModel() }) {
+fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel) {
     val pagerState = rememberPagerState(pageCount = { newsList.size })
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -204,7 +203,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
                 )
             }
 
-            // Floating buttons (Like & Share)
+            // Floating buttons (Like, Save & Share)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -227,6 +226,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
                 // Save Button
                 val isSaved = viewModel.isArticleSaved(news.id.toString())
                 IconButton(onClick = {
+                    Log.d("NewsReelScreen", "Toggling save here")
                     if (isSaved) {
                         viewModel.removeSavedArticle(news.id.toString())
                     } else {

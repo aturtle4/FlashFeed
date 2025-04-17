@@ -1,41 +1,52 @@
-package com.example.flashfeed.reel_mechanism
+package com.example.flashfeed.Profile
+
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import com.example.flashfeed.reel_mechanism.NewsArticle
 import androidx.compose.runtime.mutableStateMapOf
 
 class NewsReelViewModel : ViewModel() {
-    // Map to store liked states (Key: Article ID, Value: Boolean)
+
+    // Like status map
     val likedNewsMap = mutableStateMapOf<String, Boolean>()
+
+    // Saved articles map (internal cache)
     private val savedNewsMap = mutableStateMapOf<String, NewsArticle>()
 
-    // Function to toggle like state
+    // Backing flow for saved articles list
+    private val _savedNewsFlow = MutableStateFlow<List<NewsArticle>>(emptyList())
+    val savedNewsFlow: StateFlow<List<NewsArticle>> = _savedNewsFlow.asStateFlow()
+
+    // Toggle like
     fun toggleLike(newsId: String) {
         likedNewsMap[newsId] = !(likedNewsMap[newsId] ?: false)
     }
 
-    // Function to check if an article is liked
     fun isLiked(newsId: String): Boolean {
         return likedNewsMap[newsId] ?: false
     }
 
-    //Save a news article
+    // Save an article
     fun saveArticle(article: NewsArticle) {
         savedNewsMap[article.id.toString()] = article
+        _savedNewsFlow.value = savedNewsMap.values.toList()
+        Log.d("newsreelviewmodel", "$savedNewsMap")
     }
 
     // Remove a saved article
     fun removeSavedArticle(articleId: String) {
         savedNewsMap.remove(articleId)
+        _savedNewsFlow.value = savedNewsMap.values.toList()
     }
 
-    // Check if an article is saved
     fun isArticleSaved(articleId: String): Boolean {
         return savedNewsMap.containsKey(articleId)
     }
 
-    // Get all saved articles
     fun getSavedArticles(): List<NewsArticle> {
-        return savedNewsMap.values.toList()
+        return _savedNewsFlow.value
     }
 }
-
-

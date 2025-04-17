@@ -17,38 +17,6 @@ mysql = MySQLdb.connect(
     )
 
 
-@app.route('/user/register', methods=['POST'])
-def register():
-    if request.method == 'POST':
-        data = request.get_json()
-        name = data['name']
-        email = data['email']
-        password = data['password']
-        cursor = mysql.cursor()
-        cursor.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", (name, email, password))
-        mysql.commit()
-        cursor.close()
-        return jsonify({"message": "User registered successfully"}), 201
-    else:
-        return jsonify({"error": "Method not allowed"}), 405
-
-@app.route('/user/login', methods=['POST'])
-def login():
-    if request.method == 'POST':
-        data = request.get_json()
-        email = data['email']
-        password = data['password']
-        cursor = mysql.cursor()
-        cursor.execute("SELECT * FROM users WHERE email = %s AND password = %s", (email, password))
-        user = cursor.fetchone()
-        cursor.close()
-        if user:
-            return jsonify({"message": "Login successful"}), 200
-        else:
-            return jsonify({"error": "Invalid credentials"}), 401
-    else:
-        return jsonify({"error": "Method not allowed"}), 405
-
 @app.route('/news')
 def news():
     if request.method == 'GET':
@@ -59,45 +27,6 @@ def news():
             }), 404
         return jsonify(getNews(category)), 200
 
-@app.route('/user/save', methods=['POST'])
-def save():
-    if request.method == 'POST':
-        data = request.get_json()
-        news_id = data['news_id']
-        user_id = data['user_id']
-        cursor = mysql.cursor()
-        cursor.execute("INSERT INTO user_saved_articles (news_id, user_id) VALUES (%s, %s)", (news_id, user_id))
-        mysql.commit()
-        cursor.close()
-        return jsonify({"message": "News saved successfully"}), 201
-    else:
-        return jsonify({"error": "Method not allowed"}), 405
-    
-@app.route('/user/saved', methods=['GET'])
-def saved():
-    if request.method == 'GET':
-        user_id = request.args.get("user_id")
-        cursor = mysql.cursor()
-        cursor.execute("SELECT * FROM user_saved_articles WHERE user_id = %s", (user_id,))
-        user_saved_articles = cursor.fetchall()
-        cursor.close()
-        return jsonify({"user_saved_articles": user_saved_articles}), 200
-    else:
-        return jsonify({"error": "Method not allowed"}), 405
-    
-@app.route('/user/delete', methods=['POST'])
-def delete():
-    if request.method == 'POST':
-        data = request.get_json()
-        news_id = data['news_id']
-        user_id = data['user_id']
-        cursor = mysql.cursor()
-        cursor.execute("DELETE FROM user_saved_articles WHERE news_id = %s AND user_id = %s", (news_id, user_id))
-        mysql.commit()
-        cursor.close()
-        return jsonify({"message": "News deleted successfully"}), 200
-    else:
-        return jsonify({"error": "Method not allowed"}), 405
 
 if __name__ == '__main__':
     app.debug = True

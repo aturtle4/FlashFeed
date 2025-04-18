@@ -110,7 +110,7 @@ fun MainScreen() {
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(Screen.Home.route) { Home(categoryViewModel, newsReelViewModel) }
-            composable(Screen.Explore.route) { Explore() }
+            composable(Screen.Explore.route) { Explore(categoryViewModel, newsReelViewModel) }
             composable(Screen.Profile.route) { Profile(categoryViewModel, newsReelViewModel ) }
         }
     }

@@ -66,6 +66,11 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel) {
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
+        onDispose {
+            tts.stop()
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            Log.d("TTS", "NewsReelScreen disposed — stopping & shutting down TTS")
+        }
     }
 
     VerticalPager(state = pagerState) { page ->

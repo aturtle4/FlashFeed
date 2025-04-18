@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Menu
@@ -40,6 +41,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.flashfeed.reel_mechanism.NewsArticle
 import com.example.flashfeed.Profile.NewsReelViewModel
+import com.example.flashfeed.reel_mechanism.NewsReelScreen
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Profile(viewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) {
@@ -53,37 +56,66 @@ fun Profile(viewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) 
     )
     val savedCardHeightCollapsed = 180.dp
     val savedCardHeightExpanded = 500.dp
-    var isExpanded by remember { mutableStateOf(false) }
+    var openSavedNews by remember { mutableStateOf(false) }
     val news by newsReelViewModel.savedNewsFlow.collectAsState()
-
-
-    Box(modifier = Modifier.fillMaxSize()
-        .background(MaterialTheme.colorScheme.background)) {
-        // Main Content
-        Column (modifier = Modifier.fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)) {
-            ProfileHeader(userName = "aTurtle4")
-            Spacer(modifier = Modifier.height(55.dp))
-
-                SavedArticles(news)
-        }
-
+    Log.d("openSavedNEWs", "openSavedNews : $openSavedNews")
+    if (openSavedNews) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            contentAlignment = Alignment.TopEnd
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            IconButton(onClick = { drawerOpen = !drawerOpen }) {
+            // NewsReelScreen as background
+            NewsReelScreen(newsList = news, newsReelViewModel)
+
+            // Floating Action Button as back
+            FloatingActionButton(
+                onClick = { openSavedNews = false },
+                containerColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp)
+            ) {
                 Icon(
-                    imageVector = Icons.Default.Menu,
-                    modifier = Modifier.size(36.dp),
-                    tint = inverseOnSurface,
-                    contentDescription = "Settings-Menu"
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back to Profile",
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }
+    } else {
+        Box(
+            modifier = Modifier.fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            // Main Content
+            Column(
+                modifier = Modifier.fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
+                ProfileHeader(userName = "aTurtle4")
+                Spacer(modifier = Modifier.height(55.dp))
 
+                SavedArticles(news){openSavedNews = true}
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                contentAlignment = Alignment.TopEnd
+            ) {
+                IconButton(onClick = { drawerOpen = !drawerOpen }) {
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        modifier = Modifier.size(36.dp),
+                        tint = inverseOnSurface,
+                        contentDescription = "Settings-Menu"
+                    )
+                }
+            }
+        }
+    }
         if (drawerOpen) {
             Box(
                 modifier = Modifier
@@ -103,7 +135,7 @@ fun Profile(viewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) 
                 modifier = Modifier
                     .fillMaxHeight()
                     .width(280.dp)
-                    .align(Alignment.TopEnd)
+//                    .align(Alignment.TopStart)
             ) {
                 Column(
                     modifier = Modifier
@@ -120,9 +152,6 @@ fun Profile(viewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) 
                 }
             }
         }
-
-
-    }
 }
 
 
@@ -186,7 +215,7 @@ fun ProfileHeader(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SavedArticles(articles: List<NewsArticle>) {
+fun SavedArticles(articles: List<NewsArticle>, onArticleClick: () -> Unit) {
     Log.d("news-saved-articles","$articles")
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -210,7 +239,7 @@ fun SavedArticles(articles: List<NewsArticle>) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 items(articles) { article ->
-                    ArticleCard(article)
+                    ArticleCard(article,  onClick = onArticleClick)
                 }
             }
         }
@@ -219,7 +248,7 @@ fun SavedArticles(articles: List<NewsArticle>) {
 
 
 @Composable
-fun ArticleCard(article: NewsArticle) {
+fun ArticleCard(article: NewsArticle, onClick: () -> Unit) {
     val context = LocalContext.current
     val intent = remember(article.articleLink) {
         Intent(Intent.ACTION_VIEW, Uri.parse(article.articleLink))
@@ -228,7 +257,7 @@ fun ArticleCard(article: NewsArticle) {
         modifier = Modifier
             .aspectRatio(0.75f)
             .clip(RoundedCornerShape(20.dp))
-            .clickable { context.startActivity(intent) }
+            .clickable {onClick()}
     ) {
         AsyncImage(
             model = article.imageUrl,

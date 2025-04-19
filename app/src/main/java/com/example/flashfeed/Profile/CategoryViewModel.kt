@@ -20,11 +20,10 @@ class CategoryViewModel : ViewModel() {
         CategoryItem("Sports", Icons.Filled.SportsSoccer),
         CategoryItem("World", Icons.Filled.Public),
         CategoryItem("Politics", Icons.Filled.AccountBalance),
-        CategoryItem("Tech", Icons.Filled.Memory),
+        CategoryItem("Technology", Icons.Filled.Memory),
         CategoryItem("Startup", Icons.Filled.Lightbulb),
-        CategoryItem("Ent", Icons.Filled.Movie),
+        CategoryItem("Entrepreneurship", Icons.Filled.Movie),
         CategoryItem("Misc", Icons.Filled.Dashboard),
-        CategoryItem("Hatke", Icons.Filled.AutoAwesome),
         CategoryItem("Science", Icons.Filled.Science),
         CategoryItem("Auto", Icons.Filled.DirectionsCar)
     )
@@ -34,7 +33,7 @@ class CategoryViewModel : ViewModel() {
         private set
 
     init {
-        val defaultSelected = listOf("Trending", "Business", "Tech")
+        val defaultSelected = listOf("Trending", "Business", "Technology")
         if (categorySelection.isEmpty()) {
             categoryItems.forEach { item ->
                 categorySelection[item.name] = item.name in defaultSelected

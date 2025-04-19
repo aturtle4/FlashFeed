@@ -74,4 +74,11 @@ dependencies {
     implementation(libs.accompanist.pager.indicators)
     implementation (libs.androidx.material.icons.core)
     implementation (libs.androidx.material.icons.extended)
+
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.androidx.lifecycle.runtime.ktx.v262)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.appcompat)
 }

@@ -5,8 +5,7 @@ import java.sql.Timestamp
 data class NewsArticle (
     val id: Int,
     val title: String,
-    val shortDescription: String,
-    val mediumDescription: String,
+    val content: String,
     val imageUrl: String,
     val source: String,
     val timestamp: String,

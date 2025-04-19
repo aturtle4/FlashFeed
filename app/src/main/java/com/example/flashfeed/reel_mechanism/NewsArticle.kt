@@ -10,5 +10,6 @@ data class NewsArticle (
     val imageUrl: String,
     val source: String,
     val timestamp: String,
-    val articleLink: String
+    val articleLink: String,
+    val category: String
 )

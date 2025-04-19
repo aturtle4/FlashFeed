@@ -1,6 +1,6 @@
 package com.example.flashfeed.reel_mechanism
 
-import NewsReelViewModel
+import com.example.flashfeed.Profile.NewsReelViewModel
 import android.content.Context
 import android.content.Intent
 import android.speech.tts.TextToSpeech
@@ -13,6 +13,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,7 +37,7 @@ import java.util.*
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = remember { NewsReelViewModel() }) {
+fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel) {
     val pagerState = rememberPagerState(pageCount = { newsList.size })
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -64,6 +66,11 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
+        onDispose {
+            tts.stop()
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            Log.d("TTS", "NewsReelScreen disposed — stopping & shutting down TTS")
+        }
     }
 
     VerticalPager(state = pagerState) { page ->
@@ -72,20 +79,15 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
         val isLiked = viewModel.isLiked(news.id.toString())
 
         // Reset displayed words when swiping to a new page
-        LaunchedEffect(pagerState.currentPage) {
-            val page = pagerState.currentPage // Current page
-            val news = newsList[page] // Ensure correct news is fetched
+        LaunchedEffect(pagerState.currentPage, newsList) {
+            val page = pagerState.currentPage
+            val news = newsList[page]
 
-            // Log page changes
-            Log.d("NewsReel", "=== PAGE CHANGED TO: $page ===")
-            Log.d("NewsReel", "Title: ${news.title}")
-            Log.d("NewsReel", "Short Desc: ${news.shortDescription}")
-
-            displayedWords = ""  // Reset displayed words
+            displayedWords = ""
             tts.stop()
             tts.language = Locale("hi", "IN")
 
-            kotlinx.coroutines.delay(100) // Allow UI to settle
+            kotlinx.coroutines.delay(100)
 
             val words = news.shortDescription.split(" ")
             var currentWordIndex = 0
@@ -103,17 +105,24 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
                     Log.d("TTS", "[Page: $page] Finished Speaking")
                 }
 
+                @Deprecated("Deprecated in Java")
                 override fun onError(utteranceId: String?) {
                     Log.e("TTS", "[Page: $page] Error in TTS")
                 }
 
                 override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
                     if (currentWordIndex < words.size) {
-                        displayedWords = words.take(currentWordIndex + 1).joinToString(" ")
+                        val visibleWords = words.subList(
+                            maxOf(0, currentWordIndex - 4),
+                            currentWordIndex + 1
+                        )
+                        displayedWords = visibleWords.joinToString(" ")
                         Log.d("TTS", "[Page: $page] Speaking Word: ${words[currentWordIndex]}")
                         currentWordIndex++
                     }
                 }
+
+
             })
 
             val params = HashMap<String, String>()
@@ -121,6 +130,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
             tts.speak(news.shortDescription, TextToSpeech.QUEUE_FLUSH, params)
             isSpeaking = true
         }
+
 
 
         Box(modifier = Modifier
@@ -181,7 +191,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
-                    .padding(bottom = 20.dp)
+                    .padding(bottom = 60.dp)
                     .align(Alignment.BottomStart),
                 verticalArrangement = Arrangement.Bottom
             ) {
@@ -198,7 +208,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
                 )
             }
 
-            // Floating buttons (Like & Share)
+            // Floating buttons (Like, Save & Share)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -218,6 +228,23 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
                             .pointerInput(Unit) {}
                     )
                 }
+                // Save Button
+                val isSaved = viewModel.isArticleSaved(news.id.toString())
+                IconButton(onClick = {
+                    Log.d("NewsReelScreen", "Toggling save here")
+                    if (isSaved) {
+                        viewModel.removeSavedArticle(news.id.toString())
+                    } else {
+                        viewModel.saveArticle(news)
+                    }
+                }) {
+                    Icon(
+                        imageVector = (if (isLiked) Icons.Default.BookmarkBorder else Icons.Default.BookmarkBorder),
+                        contentDescription = "Save",
+                        tint = if (isSaved) Color.Yellow else Color.White,
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
 
                 // Share Button
                 IconButton(onClick = { shareNews(context, news.articleLink) }) {
@@ -230,6 +257,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel = r
                             .pointerInput(Unit) {}
                     )
                 }
+
             }
         }
     }

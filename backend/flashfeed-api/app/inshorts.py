@@ -20,40 +20,30 @@ headers = {
     'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
 }
 
-params = (
-    ('category', 'top_stories'),
-    ('max_limit', '10'),
-    ('include_card_data', 'true')
-)
 
+def getNews(category, count):
+    url = f'https://inshorts.com/api/en/news?category=all_news&max_limit=1000000000000000000&include_card_data=true'
+    response = requests.get(url, headers=headers)
 
-def getNews(category):
-    if category == 'all':
-        response = requests.get(
-            'https://inshorts.com/api/en/news?category=all_news&max_limit=10&include_card_data=true')
-    else:
-        response = requests.get(
-            f'https://inshorts.com/api/en/search/trending_topics/{category}', headers=headers, params=params)
     try:
         news_data = response.json()['data']['news_list']
     except Exception as e:
         print(response.text)
-        news_data = None
+        return {
+            'success': False,
+            'error': 'Failed to fetch data from Inshorts'
+        }
 
-    newsDictionary = {
-        'success': True,
-        'category': category,
-        'data': []
-    }
-
-    if not news_data:
-        newsDictionary['success'] = response.json()['error']
-        newsDictionary['error'] = 'Invalid Category'
-        return newsDictionary
-
+    filtered_news = []
     for entry in news_data:
-        try:
             news = entry['news_obj']
+            # print(news)
+            # if category is trending, then skip category check
+            if category == 'trending':
+                pass
+            elif (category.lower() not in news['category_names']):
+                continue  
+
             author = news['author_name']
             title = news['title']
             imageUrl = news['image_url']
@@ -80,7 +70,38 @@ def getNews(category):
                 'time': time,
                 'readMoreUrl': readMoreUrl
             }
-            newsDictionary['data'].append(newsObject)
-        except Exception:
-            print(entry)
-    return newsDictionary
+            filtered_news.append(newsObject)
+    print(get_available_categories())
+    return {
+        'success': True,
+        'category': category,
+        'data': filtered_news
+    }
+
+def get_available_categories():
+    url = 'https://inshorts.com/api/en/news?category=all_news&max_limit=1000000000000000000&include_card_data=true'
+    response = requests.get(url, headers=headers)
+
+    try:
+        news_data = response.json()['data']['news_list']
+    except Exception as e:
+        print(response.text)
+        return {
+            'success': False,
+            'error': 'Failed to fetch data from Inshorts'
+        }
+
+    # Set to store unique categories
+    all_categories = set()
+    
+    # Extract all categories from news items
+    for entry in news_data:
+        news = entry['news_obj']
+        categories = news.get('category_names', [])
+        for category in categories:
+            all_categories.add(category.lower())
+    
+    return {
+        'success': True,
+        'categories': sorted(list(all_categories))
+    }

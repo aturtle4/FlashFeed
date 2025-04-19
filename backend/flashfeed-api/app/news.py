@@ -9,29 +9,33 @@ router = APIRouter()
 from .inshorts import getNews  # Import the getNews function from inshorts.py
 
 @router.get("/news/fetch")
-def fetch_news(category: str, count: int = Query(..., le=25),  user: models.User = Depends(get_current_user), language: str = "english"):
+def fetch_news(category: str, initial: str,count: int = Query(..., le=25), language: str = "english"):
     # Step 1: Fetch news using our custom inshorts module
-    news_response = getNews(category.lower())
+    news_response = getNews(category.lower(), count)
     
     if not news_response.get('success') or isinstance(news_response.get('success'), str):
         return {"error": "Failed to fetch news", "details": news_response.get('error', 'Unknown error')}
 
     all_news = news_response.get("data", [])
-    selected = all_news[:count]
+    if initial == "true":
+        selected = all_news[:count]
+    else:
+        selected = all_news[count:]
 
     # Step 2: Translate if needed
     result = []
+    i = 0
     for article in selected:
+        i+=1
         news_item = {
+            "id": i,
             "title": article["title"],
             "content": article["content"],
-            "url": article["readMoreUrl"],
+            "articleLink": article["readMoreUrl"],
             "imageUrl": article["imageUrl"],
-            "author": article["author"],
-            "date": article["date"],
-            "time": article["time"],
+            "source": article["author"],
+            "timestamp": article["time"],
             "category": category,
-            "language": "english"
         }
         
         # Translate if needed

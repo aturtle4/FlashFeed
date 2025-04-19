@@ -6,6 +6,8 @@ import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
+import android.view.ViewGroup
+import android.webkit.WebView
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,21 +31,28 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.rememberAsyncImagePainter
 import com.example.flashfeed.R
+import kotlinx.coroutines.delay
 import java.util.*
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel) {
+fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, category: String) {
     val pagerState = rememberPagerState(pageCount = { newsList.size })
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val tts = remember { TextToSpeech(context) { } }
+
     var isSpeaking by remember { mutableStateOf(false) }
     var displayedWords by remember { mutableStateOf("") }
+
+    var currentVisiblePage by remember { mutableIntStateOf(0) }
+    var isAutoScrolling by remember { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -64,40 +73,45 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel) {
 
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-        onDispose {
             tts.stop()
             lifecycleOwner.lifecycle.removeObserver(observer)
             Log.d("TTS", "NewsReelScreen disposed — stopping & shutting down TTS")
         }
     }
 
+    // Autoscroll to previous page on list update
+    LaunchedEffect(newsList) {
+        isAutoScrolling = true
+        pagerState.scrollToPage(currentVisiblePage)
+        isAutoScrolling = false
+    }
+
+    // Track user scroll and fetch more data if needed
+    LaunchedEffect(pagerState.currentPage) {
+        currentVisiblePage = pagerState.currentPage
+        if (!isAutoScrolling && currentVisiblePage % 5 == 0 && currentVisiblePage != 0) {
+            Log.d("Pagination", "Fetching more news at page: $currentVisiblePage")
+            viewModel.fetchNews(category, currentVisiblePage + 10, false)
+        }
+    }
+
     VerticalPager(state = pagerState) { page ->
         val news = newsList[page]
-        val words = news.shortDescription.split(" ") // Split into words
+        val words = news.content.split(" ")
         val isLiked = viewModel.isLiked(news.id.toString())
 
-        // Reset displayed words when swiping to a new page
-        LaunchedEffect(pagerState.currentPage, newsList) {
-            val page = pagerState.currentPage
-            val news = newsList[page]
-
+        LaunchedEffect(page) {
             displayedWords = ""
             tts.stop()
             tts.language = Locale("hi", "IN")
 
-            kotlinx.coroutines.delay(100)
+            delay(100)
 
-            val words = news.shortDescription.split(" ")
             var currentWordIndex = 0
-
-            Log.d("NewsReel", "Words List Size: ${words.size}")
-
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String?) {
                     displayedWords = ""
-                    Log.d("TTS", "[Page: $page] Started Speaking: ${news.shortDescription}")
+                    Log.d("TTS", "[Page: $page] Started Speaking")
                 }
 
                 override fun onDone(utteranceId: String?) {
@@ -117,50 +131,29 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel) {
                             currentWordIndex + 1
                         )
                         displayedWords = visibleWords.joinToString(" ")
-                        Log.d("TTS", "[Page: $page] Speaking Word: ${words[currentWordIndex]}")
+                        Log.d("TTS", "[Page: $page] Speaking: ${words[currentWordIndex]}")
                         currentWordIndex++
                     }
                 }
-
-
             })
 
             val params = HashMap<String, String>()
             params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = "news_desc_$page"
-            tts.speak(news.shortDescription, TextToSpeech.QUEUE_FLUSH, params)
+            tts.speak(news.content, TextToSpeech.QUEUE_FLUSH, params)
             isSpeaking = true
         }
 
-
-
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onDoubleTap = {
-                        viewModel.toggleLike(news.id.toString())
-                    },
-                    onLongPress = {
-                        openArticleInApp(context, news.articleLink)
-                    },
-//                    onTap = {
-//                        if (isSpeaking) {
-//                                    tts.stop()
-//                                    isSpeaking = false
-//                                    displayedWords = ""  // Reset
-//                                } else {
-//                                    displayedWords = ""  // Reset before restarting
-//                                    val params = HashMap<String, String>()
-//                                    params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = "news_desc"
-//                                    tts.speak(news.shortDescription, TextToSpeech.QUEUE_FLUSH, params)
-//                                    isSpeaking = true
-//                                }
-//                    }
-                )
-            }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onDoubleTap = { viewModel.toggleLike(news.id.toString()) },
+                        onLongPress = { openArticleInApp(context, news.articleLink) },
+                    )
+                }
         ) {
-            // Background Image with Blur Effect
             Image(
                 painter = rememberAsyncImagePainter(news.imageUrl),
                 contentDescription = "News Image",
@@ -168,14 +161,15 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel) {
                 modifier = Modifier
                     .width(400.dp)
                     .align(Alignment.Center)
-                    .blur(10.dp) // Blur effect
-                    .background(Color.Black.copy(alpha = 0.5f)) // Dark overlay
+                    .blur(10.dp)
+                    .background(Color.Black.copy(alpha = 0.5f))
             )
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .align(Alignment.BottomCenter)
-                    .padding(top = 300.dp, start = 16.dp,end = 30.dp),
+                    .padding(top = 300.dp, start = 16.dp, end = 30.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -186,7 +180,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel) {
                     modifier = Modifier.padding(horizontal = 32.dp)
                 )
             }
-            // Bottom-left aligned text
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -208,7 +202,6 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel) {
                 )
             }
 
-            // Floating buttons (Like, Save & Share)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -217,51 +210,41 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.End
             ) {
-                // Like Button
                 IconButton(onClick = { viewModel.toggleLike(news.id.toString()) }) {
                     Icon(
                         painter = painterResource(id = if (isLiked) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline),
                         contentDescription = "Like",
                         tint = if (isLiked) Color.Red else Color.White,
-                        modifier = Modifier
-                            .size(36.dp)
-                            .pointerInput(Unit) {}
+                        modifier = Modifier.size(36.dp)
                     )
                 }
-                // Save Button
+
                 val isSaved = viewModel.isArticleSaved(news.id.toString())
                 IconButton(onClick = {
-                    Log.d("NewsReelScreen", "Toggling save here")
-                    if (isSaved) {
-                        viewModel.removeSavedArticle(news.id.toString())
-                    } else {
-                        viewModel.saveArticle(news)
-                    }
+                    if (isSaved) viewModel.removeSavedArticle(news.id.toString())
+                    else viewModel.saveArticle(news)
                 }) {
                     Icon(
-                        imageVector = (if (isLiked) Icons.Default.BookmarkBorder else Icons.Default.BookmarkBorder),
+                        imageVector = Icons.Default.BookmarkBorder,
                         contentDescription = "Save",
                         tint = if (isSaved) Color.Yellow else Color.White,
                         modifier = Modifier.size(36.dp)
                     )
                 }
 
-                // Share Button
                 IconButton(onClick = { shareNews(context, news.articleLink) }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_share),
                         contentDescription = "Share",
                         tint = Color.White,
-                        modifier = Modifier
-                            .size(36.dp)
-                            .pointerInput(Unit) {}
+                        modifier = Modifier.size(36.dp)
                     )
                 }
-
             }
         }
     }
 }
+
 
 // Function to share the article link
 fun shareNews(context: Context, articleLink: String) {
@@ -274,8 +257,7 @@ fun shareNews(context: Context, articleLink: String) {
 }
 
 fun openArticleInApp(context: Context, articleLink: String){
-    val intent = Intent(Intent.ACTION_VIEW).apply{
-        data = android.net.Uri.parse(articleLink)
-    }
+    val intent = Intent(context, WebViewActivity::class.java)
+    intent.putExtra("url", articleLink)
     context.startActivity(intent)
 }

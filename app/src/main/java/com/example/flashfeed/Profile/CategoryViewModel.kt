@@ -1,7 +1,9 @@
 package com.example.flashfeed.Profile
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -14,7 +16,6 @@ data class CategoryItem(
 class CategoryViewModel : ViewModel() {
 
     private val categoryItems: List<CategoryItem> = listOf(
-        CategoryItem("Trending", Icons.Filled.TrendingUp),
         CategoryItem("National", Icons.Filled.Flag),
         CategoryItem("Business", Icons.Filled.CurrencyRupee),
         CategoryItem("Sports", Icons.Filled.SportsSoccer),
@@ -23,9 +24,9 @@ class CategoryViewModel : ViewModel() {
         CategoryItem("Technology", Icons.Filled.Memory),
         CategoryItem("Startup", Icons.Filled.Lightbulb),
         CategoryItem("Entrepreneurship", Icons.Filled.Movie),
-        CategoryItem("Misc", Icons.Filled.Dashboard),
+        CategoryItem("Miscellaneous", Icons.Filled.Dashboard),
         CategoryItem("Science", Icons.Filled.Science),
-        CategoryItem("Auto", Icons.Filled.DirectionsCar)
+        CategoryItem("Automobile", Icons.Filled.DirectionsCar)
     )
 
     // Tracks selection state
@@ -33,7 +34,7 @@ class CategoryViewModel : ViewModel() {
         private set
 
     init {
-        val defaultSelected = listOf("Trending", "Business", "Technology")
+        val defaultSelected = listOf("National", "Business", "Technology")
         if (categorySelection.isEmpty()) {
             categoryItems.forEach { item ->
                 categorySelection[item.name] = item.name in defaultSelected

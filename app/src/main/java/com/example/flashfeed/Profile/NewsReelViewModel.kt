@@ -67,8 +67,8 @@ class NewsReelViewModel : ViewModel() {
         return _savedNewsFlow.value
     }
 
-    fun fetchNews(category: String, count: Int = pageSize, initial: Boolean = true) {
-        if (isFetchingMore) return
+    fun fetchNews(category: String, count: Int = pageSize + 5, initial: Boolean = true): List<NewsArticle> {
+        if (isFetchingMore) return emptyList()
         isFetchingMore = true
         if (initial) isLoading = true // Only show loading for initial fetch
 
@@ -88,6 +88,7 @@ class NewsReelViewModel : ViewModel() {
                 isLoading = false // Will be false even if it was never true, which is fine
             }
         }
+        return newsList
     }
 
 

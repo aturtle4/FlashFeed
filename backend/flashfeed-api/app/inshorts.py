@@ -68,7 +68,8 @@ def getNews(category, count):
                 'author': author,
                 'date': date,
                 'time': time,
-                'readMoreUrl': readMoreUrl
+                'readMoreUrl': readMoreUrl,
+                'category': news['category_names'],
             }
             filtered_news.append(newsObject)
     print(get_available_categories())

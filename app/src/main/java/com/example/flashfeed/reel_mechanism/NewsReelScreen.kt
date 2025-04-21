@@ -97,51 +97,55 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, ca
 
     VerticalPager(state = pagerState) { page ->
         val news = newsList[page]
-        val words = news.content.split(" ")
         val isLiked = viewModel.isLiked(news.id.toString())
 
-        LaunchedEffect(page) {
-            displayedWords = ""
-            tts.stop()
-            tts.language = Locale("hi", "IN")
+        if (currentVisiblePage == page) {
+            LaunchedEffect(currentVisiblePage) {
+                displayedWords = ""
+                tts.stop()
+                tts.language = Locale("hi", "IN")
 
-            delay(100)
+                delay(100)
 
-            var currentWordIndex = 0
-            tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                override fun onStart(utteranceId: String?) {
-                    displayedWords = ""
-                    Log.d("TTS", "[Page: $page] Started Speaking")
-                }
+                val words = news.content.split(" ")
+                var currentWordIndex = 0
 
-                override fun onDone(utteranceId: String?) {
-                    isSpeaking = false
-                    Log.d("TTS", "[Page: $page] Finished Speaking")
-                }
-
-                @Deprecated("Deprecated in Java")
-                override fun onError(utteranceId: String?) {
-                    Log.e("TTS", "[Page: $page] Error in TTS")
-                }
-
-                override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
-                    if (currentWordIndex < words.size) {
-                        val visibleWords = words.subList(
-                            maxOf(0, currentWordIndex - 4),
-                            currentWordIndex + 1
-                        )
-                        displayedWords = visibleWords.joinToString(" ")
-                        Log.d("TTS", "[Page: $page] Speaking: ${words[currentWordIndex]}")
-                        currentWordIndex++
+                tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onStart(utteranceId: String?) {
+                        displayedWords = ""
+                        Log.d("TTS", "[Page: $page] Started Speaking")
                     }
-                }
-            })
 
-            val params = HashMap<String, String>()
-            params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = "news_desc_$page"
-            tts.speak(news.content, TextToSpeech.QUEUE_FLUSH, params)
-            isSpeaking = true
+                    override fun onDone(utteranceId: String?) {
+                        isSpeaking = false
+                        Log.d("TTS", "[Page: $page] Finished Speaking")
+                    }
+
+                    @Deprecated("Deprecated in Java")
+                    override fun onError(utteranceId: String?) {
+                        Log.e("TTS", "[Page: $page] Error in TTS")
+                    }
+
+                    override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
+                        if (currentWordIndex < words.size) {
+                            val visibleWords = words.subList(
+                                maxOf(0, currentWordIndex - 4),
+                                currentWordIndex + 1
+                            )
+                            displayedWords = visibleWords.joinToString(" ")
+                            Log.d("TTS", "[Page: $page] Speaking: ${words[currentWordIndex]}")
+                            currentWordIndex++
+                        }
+                    }
+                })
+
+                val params = HashMap<String, String>()
+                params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = "news_desc_$page"
+                tts.speak(news.content, TextToSpeech.QUEUE_FLUSH, params)
+                isSpeaking = true
+            }
         }
+
 
         Box(
             modifier = Modifier

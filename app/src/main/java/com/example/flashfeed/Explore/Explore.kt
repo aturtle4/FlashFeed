@@ -54,11 +54,11 @@ import com.example.flashfeed.Profile.NewsReelViewModel
 import com.example.flashfeed.reel_mechanism.NewsArticle
 import com.example.flashfeed.reel_mechanism.NewsReelScreen
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun Explore(categoryViewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) {
     var launchNews by remember { mutableStateOf(false) }
     var catLaunchNews by remember { mutableStateOf(Pair(false, "Trending")) }
+    var selectedIndex by remember { mutableStateOf(0) } // 🆕 Added
     val pageSize = 20
     var currentPage by remember { mutableStateOf(1) }
     var isLoading by remember { mutableStateOf(false) }
@@ -66,79 +66,52 @@ fun Explore(categoryViewModel: CategoryViewModel, newsReelViewModel: NewsReelVie
 
     val gridState = rememberLazyGridState()
 
-    LaunchedEffect (gridState){
-        Log.d("Explore", "LaunchedEffect triggered")
-        snapshotFlow {gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index}
-
+    LaunchedEffect(gridState) {
+        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
             .collect { lastVisibleItemIndex ->
-                Log.d("Explore", "Last visible item index: $lastVisibleItemIndex")
-                val totalItems = gridState.layoutInfo.totalItemsCount
-                Log.d("Explore", "Total items: $totalItems")
-                if (lastVisibleItemIndex == totalItems - 1 && !isLoading) {
-                    Log.d("Explore", "Loading more items...")
+                if (lastVisibleItemIndex == gridState.layoutInfo.totalItemsCount - 1 && !isLoading) {
                     isLoading = true
                     currentPage++
-                    Log.d("Explore", "Current page: $currentPage")
-                    newsReelViewModel.fetchNews("Trending", currentPage*12, false)
-                    Log.d("Explore", "Fetched more items: ${newsList.size}")
+                    newsReelViewModel.fetchNews("Trending", currentPage * 12, false)
                     isLoading = false
                 }
             }
     }
 
-
-    if (launchNews){
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            // NewsReelScreen as background
-            NewsReelScreen(newsList = newsList, newsReelViewModel, "Trending")
-
-            // Floating Action Button as back
+    if (launchNews) {
+        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            NewsReelScreen(
+                newsList = newsList,
+                viewModel = newsReelViewModel,
+                category = "Trending",
+                startIndex = selectedIndex // 🆕 Pass selected index
+            )
             FloatingActionButton(
                 onClick = { launchNews = false },
                 containerColor = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(16.dp)
+                modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back to Profile",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onPrimary)
             }
         }
-    }
-    else if(catLaunchNews.first){
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            // NewsReelScreen as background
-            val filteredNews = newsList.filter { it.category == catLaunchNews.second }
-            NewsReelScreen(newsList = filteredNews, newsReelViewModel, catLaunchNews.second)
-
-            // Floating Action Button as back
+    } else if (catLaunchNews.first) {
+        val filteredNews = newsList.filter { it.category == catLaunchNews.second }
+        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            NewsReelScreen(
+                newsList = filteredNews,
+                viewModel = newsReelViewModel,
+                category = catLaunchNews.second,
+                startIndex = selectedIndex // 🆕 Pass selected index here too if needed
+            )
             FloatingActionButton(
                 onClick = { catLaunchNews = Pair(false, catLaunchNews.second) },
                 containerColor = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(16.dp)
+                modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back to Profile",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onPrimary)
             }
         }
-    }
-    else {
+    } else {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -146,15 +119,9 @@ fun Explore(categoryViewModel: CategoryViewModel, newsReelViewModel: NewsReelVie
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = "Explore",
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
-                modifier = Modifier.padding(top = 16.dp)
-            )
-            Text(
-                text = "Popular This Week",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-            )
+            Text("Explore", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold), modifier = Modifier.padding(top = 16.dp))
+            Text("Popular This Week", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
+
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
                 state = gridState,
@@ -163,10 +130,14 @@ fun Explore(categoryViewModel: CategoryViewModel, newsReelViewModel: NewsReelVie
                 modifier = Modifier.fillMaxWidth()
             ) {
                 items(newsList) { article ->
-                    ArticleCard(article,  onClick = { launchNews = !launchNews })
+                    val index = newsList.indexOf(article)
+                    ArticleCard(article, onClick = {
+                        selectedIndex = index // 🆕 Track index
+                        launchNews = true
+                    })
                 }
             }
-
         }
     }
 }
+

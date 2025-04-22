@@ -6,8 +6,6 @@ import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
-import android.view.ViewGroup
-import android.webkit.WebView
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,7 +29,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.rememberAsyncImagePainter
@@ -42,7 +39,8 @@ import java.util.*
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, category: String) {
+fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, category: String, startIndex: Int = 0) {
+    Log.d("NewsReelScreen", "NewsReelScreen called with category: $category, startIndex: $startIndex")
     val pagerState = rememberPagerState(pageCount = { newsList.size })
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -51,7 +49,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, ca
     var isSpeaking by remember { mutableStateOf(false) }
     var displayedWords by remember { mutableStateOf("") }
 
-    var currentVisiblePage by remember { mutableIntStateOf(0) }
+    var currentVisiblePage by remember { mutableIntStateOf(startIndex) }
     var isAutoScrolling by remember { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner) {

@@ -39,7 +39,7 @@ class NewsReelViewModel(application: Application) : AndroidViewModel(application
     var isLoading by mutableStateOf(false)
 
     // Saved articles map (internal cache)
-    private val savedNewsMap = mutableStateMapOf<String, NewsArticle>()
+    private val savedNewsMap = mutableStateMapOf<String, Boolean>()
 
     // Backing flow for saved articles list
     private val _savedNewsFlow = MutableStateFlow<List<NewsArticle>>(emptyList())
@@ -62,8 +62,8 @@ class NewsReelViewModel(application: Application) : AndroidViewModel(application
     // Toggle like
     fun toggleLike(newsId: String) {
         viewModelScope.launch {
-            val currentLiked = likedNewsMap[newsId] ?: false
-            likedNewsMap[newsId] = !currentLiked
+            val currentLiked = savedNewsMap[newsId] ?: false
+            savedNewsMap[newsId] = !currentLiked
 
             // Get the corresponding article
             val article = newsList.find { it.id.toString() == newsId }
@@ -84,7 +84,7 @@ class NewsReelViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun isLiked(newsId: String): Boolean {
-        return likedNewsMap[newsId] ?: false
+        return savedNewsMap[newsId] == true
     }
 
     // Save an article

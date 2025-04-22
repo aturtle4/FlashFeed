@@ -40,6 +40,7 @@ android {
 }
 
 dependencies {
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -61,6 +62,7 @@ dependencies {
 
     // Coil for Image Loading
     implementation(libs.coil.compose)
+    implementation(libs.androidx.room.common.jvm)
 
     // Testing dependencies
     testImplementation(libs.junit)

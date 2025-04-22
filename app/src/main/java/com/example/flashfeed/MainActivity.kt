@@ -35,6 +35,7 @@ import com.example.flashfeed.Home.Home
 import com.example.flashfeed.Profile.NewsReelViewModel
 import com.example.flashfeed.Profile.Profile
 import com.example.flashfeed.ui.theme.FlashFeedTheme
+import androidx.compose.ui.platform.LocalContext
 
 class MainActivity : ComponentActivity() {
 
@@ -66,7 +67,10 @@ fun MainScreen() {
     val inactiveColor = MaterialTheme.colorScheme.surfaceVariant
 
     val categoryViewModel : CategoryViewModel = viewModel()
-    val newsReelViewModel : NewsReelViewModel = viewModel()
+    val context = LocalContext.current
+    val newsReelViewModel : NewsReelViewModel = viewModel(
+        factory = NewsReelViewModel.Factory(context.applicationContext as android.app.Application)
+    )
 
     Scaffold(
         floatingActionButton = {

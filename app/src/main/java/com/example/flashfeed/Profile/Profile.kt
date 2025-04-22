@@ -53,8 +53,11 @@ fun Profile(viewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) 
     val savedCardHeightCollapsed = 180.dp
     val savedCardHeightExpanded = 500.dp
     var openSavedNews by remember { mutableStateOf(false) }
+    var openLikedNews by remember { mutableStateOf(false) }
+
     val news by newsReelViewModel.savedNewsFlow.collectAsState()
-    Log.d("openSavedNEWs", "openSavedNews : $openSavedNews")
+    val likedNews by newsReelViewModel.likedNewsFlow.collectAsState()
+
     if (openSavedNews) {
         Box(
             modifier = Modifier
@@ -79,6 +82,28 @@ fun Profile(viewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) 
                 )
             }
         }
+    } else if (openLikedNews) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            NewsReelScreen(newsList = likedNews, newsReelViewModel, "LIKED")
+
+            FloatingActionButton(
+                onClick = { openLikedNews = false },
+                containerColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back to Profile",
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+        }
     } else {
         Box(
             modifier = Modifier.fillMaxSize()
@@ -86,13 +111,18 @@ fun Profile(viewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) 
         ) {
             // Main Content
             Column(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
             ) {
                 ProfileHeader(userName = "aTurtle4")
                 Spacer(modifier = Modifier.height(55.dp))
 
-                SavedArticles(news){openSavedNews = true}
+                LikedReels(likedNews) {openLikedNews = true}
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+                SavedArticles(news) { openSavedNews = true }
             }
 
             Box(
@@ -150,6 +180,51 @@ fun Profile(viewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) 
         }
 }
 
+@Composable
+fun LikedReels(articles: List<NewsArticle>, onArticleClick: () -> Unit) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Liked Reels",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            if (articles.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No liked reels yet",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(articles) { article ->
+                        ArticleCard(article, onClick = onArticleClick)
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun ProfileHeader(

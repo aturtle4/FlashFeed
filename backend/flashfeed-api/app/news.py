@@ -39,7 +39,7 @@ def fetch_news(category: str, initial: str, count: int = Query(..., le=25), lang
     result = []
     for i, article in enumerate(news_response["articles"], 1):
         news_item = {
-            "id": i,
+            "id": article["hash_id"],
             "title": article["title"],
             "content": article["content"],
             "articleLink": article["url"],

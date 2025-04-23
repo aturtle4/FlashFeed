@@ -14,6 +14,11 @@ import com.example.flashfeed.database.FlashFeedDatabase
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+data class CategoryItem (
+    val name: String,
+    val icon: ImageVector
+)
+
 class CategoryViewModel(application: Application) : AndroidViewModel(application) {
     // Category definitions
     private val categoryItems: List<CategoryItem> = listOf(

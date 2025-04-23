@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp") version "2.0.21-1.0.27" // Match your Kotlin version
 }
 
 android {
@@ -63,6 +64,9 @@ dependencies {
     // Coil for Image Loading
     implementation(libs.coil.compose)
     implementation(libs.androidx.room.common.jvm)
+    implementation(libs.androidx.room.runtime) // or your desired version
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     // Testing dependencies
     testImplementation(libs.junit)

@@ -222,6 +222,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, ca
                 }
 
                 val isSaved = viewModel.isArticleSaved(news.id.toString())
+                Log.d("NewsReelScreen", "isSaved: ${viewModel.getSavedArticles()}")
                 IconButton(onClick = {
                     if (isSaved) viewModel.removeSavedArticle(news.id.toString())
                     else viewModel.saveArticle(news)

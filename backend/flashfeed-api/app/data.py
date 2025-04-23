@@ -1,4 +1,5 @@
 import requests
+import uuid
 
 class NewsService:
     def __init__(self):
@@ -9,6 +10,14 @@ class NewsService:
             "Content-Type": "application/json",
             "x-device-id": "1234567890abcdef",
         }
+
+    def create_uuid(self, *args):
+        uuidStr = ''
+
+        for arg in args:
+            uuidStr += '-'.join(arg)
+
+        return str(uuid.uuid5(uuid.NAMESPACE_DNS, str(uuidStr)))
     
     def create_news_payload(self, news_objs):
         """Convert raw news objects to formatted news payload"""
@@ -58,6 +67,8 @@ class NewsService:
         # Create response payload
         all_news_response = self.create_news_payload(all_news_items["news_objs"])
         
+        for article in trending_news_response:
+            article["hash_id"] = self.create_uuid(article["title"], article["content"]) 
         return {"count": len(all_news_response), "articles": all_news_response}
     
     def get_top_news(self, offset, limit):
@@ -92,6 +103,8 @@ class NewsService:
         # Create response payload
         top_news_response = self.create_news_payload(all_news_items["news_objs"])
         
+        for article in trending_news_response:
+            article["hash_id"] = self.create_uuid(article["title"], article["content"])
         return {"count": len(top_news_response), "articles": top_news_response}
     
     def get_trending_news(self, offset, limit):
@@ -114,7 +127,11 @@ class NewsService:
         
         # Create response payload
         trending_news_response = self.create_news_payload(all_news_items["news_objs"])
-        
+
+        # Add hash_id to each article
+        for article in trending_news_response:
+            article["hash_id"] = self.create_uuid(article["title"], article["content"])
+
         return {"count": len(trending_news_response), "articles": trending_news_response}
 
     def get_trending_topics(self):
@@ -159,6 +176,8 @@ class NewsService:
         # Create response payload
         topic_news_response = self.create_news_payload(sanitized_news_items)
         
+        for article in topic_news_response:
+            article["hash_id"] = self.create_uuid(article["title"], article["content"])
         return {"count": len(topic_news_response), "articles": topic_news_response}
     
     def get_searched_news(self, search_query, offset, limit):
@@ -187,7 +206,8 @@ class NewsService:
         
         # Create response payload
         searched_news_response = self.create_news_payload(sanitized_news_items)
-        
+        for article in searched_news_response:
+            article["hash_id"] = self.create_uuid(article["title"], article["content"])
         return {"count": len(searched_news_response), "articles": searched_news_response}
     
     def get_paginated_news(self, max_page_limit, initial_offset_id=None):
@@ -202,5 +222,5 @@ class NewsService:
             
             paginated_news_item.extend(paginated_news["news_list"])
             offset_news_id = paginated_news["min_news_id"]
-        
+
         return paginated_news_item

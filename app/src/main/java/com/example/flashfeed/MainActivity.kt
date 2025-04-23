@@ -70,7 +70,6 @@ fun MainScreen() {
     val categoryViewModel: CategoryViewModel = viewModel(
         factory = CategoryViewModel.Factory(context.applicationContext as android.app.Application)
     )
-    val context = LocalContext.current
     val newsReelViewModel : NewsReelViewModel = viewModel(
         factory = NewsReelViewModel.Factory(context.applicationContext as android.app.Application)
     )

@@ -19,7 +19,7 @@ data class SavedReelEntity(
 ) {
     fun toNewsArticle(): NewsArticle {
         return NewsArticle(
-            id = id.toInt(),
+            id = id,
             title = title,
             content = content,
             imageUrl = imageUrl,

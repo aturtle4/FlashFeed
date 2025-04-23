@@ -33,8 +33,21 @@ class StartingPage : ComponentActivity() {
 
 @Composable
 fun CrossfadeImageSwitcher() {
-    var showFirstImage by remember { mutableStateOf(true) }
+    var currentImageIndex by remember { mutableStateOf(0) }
     val context = LocalContext.current
+    val images = listOf(
+        R.drawable.starting1,
+        R.drawable.starting2,
+        R.drawable.starting3,
+        R.drawable.starting4
+    )
+
+    LaunchedEffect(currentImageIndex) {
+        if (currentImageIndex < images.size - 1) {
+            kotlinx.coroutines.delay(500) // 1-second delay
+            currentImageIndex++
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -46,27 +59,12 @@ fun CrossfadeImageSwitcher() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Crossfade(targetState = showFirstImage, label = "Image Crossfade") { isFirst ->
-            if (isFirst) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo_white),
-                    contentDescription = "Image 1",
-                    modifier = Modifier.size(200.dp),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.logo_coloured),
-                    contentDescription = "Image 2",
-                    modifier = Modifier.size(200.dp),
-                    contentScale = ContentScale.Crop
-                )
-            }
+        Crossfade(targetState = currentImageIndex, label = "Image Crossfade") { index ->
+            Image(
+                painter = painterResource(id = images[index]),
+                contentDescription = "Image $index",
+                modifier = Modifier.fillMaxSize(),
+            )
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-
-
     }
 }

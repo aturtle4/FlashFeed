@@ -5,9 +5,14 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [SavedReelEntity::class], version = 1)
+@Database(
+    entities = [SavedReelEntity::class, CategoryEntity::class],
+    version = 2,
+    exportSchema = false
+)
 abstract class FlashFeedDatabase : RoomDatabase() {
     abstract fun savedReelDao(): SavedReelDao
+    abstract fun categoryDao(): CategoryDao
 
     companion object {
         @Volatile
@@ -19,7 +24,9 @@ abstract class FlashFeedDatabase : RoomDatabase() {
                     context.applicationContext,
                     FlashFeedDatabase::class.java,
                     "flashfeed_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

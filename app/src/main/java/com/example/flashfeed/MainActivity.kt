@@ -66,7 +66,10 @@ fun MainScreen() {
     val activeColor = MaterialTheme.colorScheme.primary
     val inactiveColor = MaterialTheme.colorScheme.surfaceVariant
 
-    val categoryViewModel : CategoryViewModel = viewModel()
+    val context = LocalContext.current
+    val categoryViewModel: CategoryViewModel = viewModel(
+        factory = CategoryViewModel.Factory(context.applicationContext as android.app.Application)
+    )
     val context = LocalContext.current
     val newsReelViewModel : NewsReelViewModel = viewModel(
         factory = NewsReelViewModel.Factory(context.applicationContext as android.app.Application)

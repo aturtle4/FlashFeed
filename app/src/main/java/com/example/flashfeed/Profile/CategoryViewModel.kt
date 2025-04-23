@@ -1,20 +1,21 @@
 package com.example.flashfeed.Profile
 
+import android.app.Application
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.lifecycle.ViewModel
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.example.flashfeed.database.CategoryEntity
+import com.example.flashfeed.database.FlashFeedDatabase
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
-data class CategoryItem(
-    val name: String,
-    val icon: ImageVector
-)
-
-class CategoryViewModel : ViewModel() {
-
+class CategoryViewModel(application: Application) : AndroidViewModel(application) {
+    // Category definitions
     private val categoryItems: List<CategoryItem> = listOf(
         CategoryItem("National", Icons.Filled.Flag),
         CategoryItem("Business", Icons.Filled.CurrencyRupee),
@@ -30,21 +31,46 @@ class CategoryViewModel : ViewModel() {
     )
 
     // Tracks selection state
-    var categorySelection = mutableStateMapOf<String, Boolean>()
-        private set
+    val categorySelection = mutableStateMapOf<String, Boolean>()
+
+    private val database = FlashFeedDatabase.getDatabase(application)
+    private val categoryDao = database.categoryDao()
 
     init {
-        val defaultSelected = listOf("National", "Business", "Technology")
-        if (categorySelection.isEmpty()) {
-            categoryItems.forEach { item ->
-                categorySelection[item.name] = item.name in defaultSelected
+        viewModelScope.launch {
+            try {
+                val savedCategories = categoryDao.getAllCategories().first()
+
+                if (savedCategories.isEmpty()) {
+                    saveDefaultCategories()
+                } else {
+                    savedCategories.forEach { entity ->
+                        categorySelection[entity.name] = entity.isSelected
+                    }
+                }
+            } catch (e: Exception) {
+                saveDefaultCategories()
             }
         }
     }
 
-    // Toggle category selection with a max limit of 5
+    private fun saveDefaultCategories() {
+        val defaultSelected = listOf("National", "Business", "Technology")
+
+        viewModelScope.launch {
+            categoryItems.forEach { item ->
+                val isSelected = item.name in defaultSelected
+                categorySelection[item.name] = isSelected
+
+                // Save to database
+                val entity = CategoryEntity(name = item.name, isSelected = isSelected)
+                categoryDao.insertCategory(entity)
+            }
+        }
+    }
+
     fun toggleCategory(category: String) {
-        // Check if the category exists in categoryItems
+        // Check if the category exists
         if (category !in categoryItems.map { it.name }) return
 
         val currentSelectedCount = categorySelection.count { it.value }
@@ -53,17 +79,35 @@ class CategoryViewModel : ViewModel() {
         when {
             isSelected -> {
                 categorySelection[category] = false
+                saveCategorySelection(category, false)
             }
             currentSelectedCount < 5 -> {
                 categorySelection[category] = true
+                saveCategorySelection(category, true)
             }
         }
     }
 
-    // Return selected CategoryItems (with icons) instead of just names
+    private fun saveCategorySelection(name: String, isSelected: Boolean) {
+        viewModelScope.launch {
+            categoryDao.updateCategorySelection(name, isSelected)
+        }
+    }
+
     fun getSelectedCategories(): List<CategoryItem> {
         return categoryItems.filter { categorySelection[it.name] == true }
     }
 
     fun getAllCategories(): List<CategoryItem> = categoryItems
+
+    // Factory for creating this ViewModel with application context
+    class Factory(private val application: Application) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(CategoryViewModel::class.java)) {
+                return CategoryViewModel(application) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
+    }
 }

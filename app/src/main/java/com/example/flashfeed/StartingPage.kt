@@ -1,70 +1,61 @@
 package com.example.flashfeed
-// changed
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.layout.ContentScale
+import androidx.core.view.WindowCompat
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.flashfeed.ui.theme.FlashFeedTheme
+import kotlinx.coroutines.delay
 
-
-class StartingPage : ComponentActivity() {
+class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        enableEdgeToEdge()
         setContent {
             FlashFeedTheme {
-                CrossfadeImageSwitcher()
+                SplashScreen()
             }
         }
     }
 }
 
 @Composable
-fun CrossfadeImageSwitcher() {
-    var currentImageIndex by remember { mutableStateOf(0) }
+fun SplashScreen() {
     val context = LocalContext.current
-    val images = listOf(
-        R.drawable.starting1,
-        R.drawable.starting2,
-        R.drawable.starting3,
-        R.drawable.starting4
-    )
+    val composition = rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.splash))
 
-    LaunchedEffect(currentImageIndex) {
-        if (currentImageIndex < images.size - 1) {
-            kotlinx.coroutines.delay(500) // 1-second delay
-            currentImageIndex++
-        }
-    }
-
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .clickable {
-                val intent = Intent(context, LoginPage::class.java)
-                context.startActivity(intent)
-            },
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center
     ) {
-        Crossfade(targetState = currentImageIndex, label = "Image Crossfade") { index ->
-            Image(
-                painter = painterResource(id = images[index]),
-                contentDescription = "Image $index",
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
+        LottieAnimation(
+            composition = composition.value,
+            iterations = LottieConstants.IterateForever,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        delay(650) // 650ms delay
+        context.startActivity(Intent(context, MainActivity::class.java))
+        (context as? ComponentActivity)?.finish()
     }
 }

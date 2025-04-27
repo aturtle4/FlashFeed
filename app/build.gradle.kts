@@ -81,6 +81,11 @@ dependencies {
     implementation (libs.androidx.material.icons.core)
     implementation (libs.androidx.material.icons.extended)
 
+    implementation(libs.material) // or the latest version
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.lottie)
+    implementation(libs.lottie.compose) // Add this line
+
     // Retrofit
     implementation(libs.retrofit)
     implementation(libs.converter.gson)

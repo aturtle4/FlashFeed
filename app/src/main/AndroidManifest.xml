@@ -14,33 +14,20 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".LoginPage"
-            android:exported="false" />
-        <activity
-            android:name=".SignupPage"
-            android:exported="false" />
-        <activity
             android:name=".reel_mechanism.WebViewActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".MainActivity"
-            android:exported="false" />
-        <activity
-            android:name=".StartingPage"
+            android:name=".SplashActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.FlashFeed">
-            <meta-data
-                android:name="android.windowSplashScreenBackground"
-                android:resource="@color/black"/>
+            android:theme="@style/Theme.FlashFeed.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-
         </activity>
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FlashFeed" />
     </application>
-
 </manifest>

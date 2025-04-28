@@ -39,7 +39,11 @@ import com.example.flashfeed.Profile.NewsReelViewModel
 import com.example.flashfeed.Profile.Profile
 import com.example.flashfeed.ui.theme.FlashFeedTheme
 import androidx.compose.ui.platform.LocalContext
+import com.example.flashfeed.Misc.AboutTheAppScreen
+import com.example.flashfeed.Misc.PrivacyPolicyScreen
+import com.example.flashfeed.Misc.TermsAndConditionsScreen
 import com.example.flashfeed.Profile.AccountInfo
+
 
 class MainActivity : ComponentActivity() {
 
@@ -55,6 +59,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 sealed class Screen(val route: String){
+    object PrivacyPolicy : Screen("PrivacyPolicy")
+    object TermsAndConditions : Screen("TermsAndConditions")
+    object AboutTheApp : Screen("AboutTheApp")
     object Setup : Screen("Setup")
     object Home : Screen("Home")
     object Explore : Screen("Explore")
@@ -124,6 +131,15 @@ fun MainScreen() {
             startDestination = if (accountInfo == null) Screen.Setup.route else Screen.Home.route,
             modifier = Modifier.padding(paddingValues)
         ) {
+            composable(Screen.AboutTheApp.route){
+                AboutTheAppScreen(navController)
+            }
+            composable (Screen.PrivacyPolicy.route){
+                PrivacyPolicyScreen(navController)
+            }
+            composable (Screen.TermsAndConditions.route){
+                TermsAndConditionsScreen(navController)
+            }
             composable(Screen.Setup.route) {
                 SetupAccountScreen { info ->
                     accountInfo = info

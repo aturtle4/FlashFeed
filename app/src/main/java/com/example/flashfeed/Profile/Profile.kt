@@ -131,6 +131,15 @@ fun Profile(
                 }
                 CategorySelector(viewModel = viewModel)
                 LangSelector(accountInfo = accountInfo)
+                TextButton(onClick = { navController.navigate("PrivacyPolicy") }) {
+                    Text(text = "Privacy Profile", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                }
+                TextButton(onClick = { navController.navigate("TermsAndConditions") }) {
+                    Text(text = "Terms & Conditions", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                }
+                TextButton(onClick = { navController.navigate("AboutTheApp") }) {
+                    Text(text = "About the App", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                }
             }
         }
     } else {

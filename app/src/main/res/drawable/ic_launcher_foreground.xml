@@ -1,7 +1,7 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:drawable="@drawable/logo_coloured"
-        android:width="100dp"
-        android:height="250dp"
+        android:width="35dp"
+        android:height="87dp"
         android:gravity="center" />
 </layer-list>

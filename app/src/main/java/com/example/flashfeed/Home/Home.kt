@@ -3,28 +3,31 @@ package com.example.flashfeed.Home
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.flashfeed.Profile.AccountInfo
 import com.example.flashfeed.Profile.CategoryViewModel
 import com.example.flashfeed.Profile.CategoryItem
 import com.example.flashfeed.Profile.NewsReelViewModel
 import com.example.flashfeed.reel_mechanism.NewsReelScreen
 
 @Composable
-fun Home(categoryViewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) {
+fun Home(
+    categoryViewModel: CategoryViewModel,
+    newsReelViewModel: NewsReelViewModel,
+    accountInfo: AccountInfo?
+) {
     val selectedCategories = categoryViewModel.getSelectedCategories()
     var selectedTab by remember { mutableStateOf(selectedCategories.firstOrNull()?.name ?: "Trending") }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        GetRespNews(category = selectedTab, newsReelViewModel)
+        GetRespNews(category = selectedTab, newsReelViewModel, accountInfo)
         TopBar(
             categories = selectedCategories,
             selectedTab = selectedTab,
@@ -42,10 +45,6 @@ fun TopBar(
     selectedTab: String,
     onTabSelected: (String) -> Unit
 ) {
-    val inverseOnSurface = MaterialTheme.colorScheme.onSurface.run {
-        Color(1f - red, 1f - green, 1f - blue, alpha)
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -66,12 +65,12 @@ fun TopBar(
                     imageVector = category.icon,
                     contentDescription = category.name,
                     modifier = Modifier.size(20.dp),
-                    tint = if (isSelected) MaterialTheme.colorScheme.primary else inverseOnSurface,
+                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text = category.name.replaceFirstChar { it.uppercase() },
                     fontSize = 12.sp,
-                    color = if (isSelected) MaterialTheme.colorScheme.primary else inverseOnSurface,
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(top = 2.dp)
                 )
             }
@@ -81,7 +80,7 @@ fun TopBar(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun GetRespNews(category: String, viewModel: NewsReelViewModel) {
+fun GetRespNews(category: String, viewModel: NewsReelViewModel, accountInfo: AccountInfo?) {
     LaunchedEffect(category) {
         println(category)
         viewModel.fetchNews(category)
@@ -92,7 +91,7 @@ fun GetRespNews(category: String, viewModel: NewsReelViewModel) {
             CircularProgressIndicator()
         }
     } else {
-        NewsReelScreen(newsList = viewModel.newsList, viewModel, category)
+        NewsReelScreen(newsList = viewModel.newsList, viewModel, category, accountInfo =  accountInfo)
     }
 }
 

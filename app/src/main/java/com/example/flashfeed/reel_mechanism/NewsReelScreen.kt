@@ -19,7 +19,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -32,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.rememberAsyncImagePainter
+import com.example.flashfeed.Profile.AccountInfo
 import com.example.flashfeed.R
 import kotlinx.coroutines.delay
 import java.util.*
@@ -39,13 +39,19 @@ import java.util.*
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, category: String, startIndex: Int = 0) {
+fun NewsReelScreen(
+    newsList: List<NewsArticle>,
+    viewModel: NewsReelViewModel,
+    category: String,
+    startIndex: Int = 0,
+    accountInfo: AccountInfo?
+) {
     Log.d("NewsReelScreen", "NewsReelScreen called with category: $category, startIndex: $startIndex")
     val pagerState = rememberPagerState(pageCount = { newsList.size })
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val tts = remember { TextToSpeech(context) { } }
-
+    val language = accountInfo?.lang
     var isSpeaking by remember { mutableStateOf(false) }
     var displayedWords by remember { mutableStateOf("") }
 
@@ -148,7 +154,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, ca
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black)
+                .background(MaterialTheme.colorScheme.background)
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onDoubleTap = { viewModel.toggleLike(news.id.toString()) },
@@ -163,8 +169,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, ca
                 modifier = Modifier
                     .width(400.dp)
                     .align(Alignment.Center)
-                    .blur(10.dp)
-                    .background(Color.Black.copy(alpha = 0.5f))
+                    .background(MaterialTheme.colorScheme.background)
             )
 
             Box(
@@ -177,7 +182,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, ca
                 Text(
                     text = displayedWords,
                     fontSize = 22.sp,
-                    color = Color.White.copy(alpha = 0.9f),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 32.dp)
                 )
@@ -191,16 +196,17 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, ca
                     .align(Alignment.BottomStart),
                 verticalArrangement = Arrangement.Bottom
             ) {
-                Text(
-                    text = "${news.source} • ${news.timestamp}",
-                    fontSize = 20.sp,
-                    color = Color.White
-                )
+
                 Text(
                     text = "# ${news.title}",
                     fontSize = 14.sp,
-                    color = Color.DarkGray,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.padding(start = 10.dp)
+                )
+                Text(
+                    text = "${news.source} • ${news.timestamp}",
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                 )
             }
 
@@ -216,7 +222,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, ca
                     Icon(
                         painter = painterResource(id = if (isLiked) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline),
                         contentDescription = "Like",
-                        tint = if (isLiked) Color.Red else Color.White,
+                        tint = if (isLiked) Color.Red else MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(36.dp)
                     )
                 }
@@ -230,7 +236,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, ca
                     Icon(
                         imageVector = Icons.Default.BookmarkBorder,
                         contentDescription = "Save",
-                        tint = if (isSaved) Color.Yellow else Color.White,
+                        tint = if (isSaved) Color.Yellow else MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(36.dp)
                     )
                 }
@@ -239,7 +245,7 @@ fun NewsReelScreen(newsList: List<NewsArticle>, viewModel: NewsReelViewModel, ca
                     Icon(
                         painter = painterResource(id = R.drawable.ic_share),
                         contentDescription = "Share",
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(36.dp)
                     )
                 }

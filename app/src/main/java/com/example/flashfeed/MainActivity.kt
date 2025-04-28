@@ -20,6 +20,9 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -36,6 +39,7 @@ import com.example.flashfeed.Profile.NewsReelViewModel
 import com.example.flashfeed.Profile.Profile
 import com.example.flashfeed.ui.theme.FlashFeedTheme
 import androidx.compose.ui.platform.LocalContext
+import com.example.flashfeed.Profile.AccountInfo
 
 class MainActivity : ComponentActivity() {
 
@@ -51,6 +55,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 sealed class Screen(val route: String){
+    object Setup : Screen("Setup")
     object Home : Screen("Home")
     object Explore : Screen("Explore")
     object Profile : Screen("Profile")
@@ -60,11 +65,13 @@ sealed class Screen(val route: String){
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
+    var accountInfo by remember { mutableStateOf<AccountInfo?>(null) }
+
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStack?.destination?.route
 
     val activeColor = MaterialTheme.colorScheme.primary
-    val inactiveColor = MaterialTheme.colorScheme.surfaceVariant
+    val inactiveColor = MaterialTheme.colorScheme.surface
 
     val context = LocalContext.current
     val categoryViewModel: CategoryViewModel = viewModel(
@@ -76,35 +83,37 @@ fun MainScreen() {
 
     Scaffold(
         floatingActionButton = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                val fabModifier = Modifier.size(60.dp)
-                val iconSize = Modifier.size(32.dp)
+            if (accountInfo != null && currentRoute != Screen.Setup.route) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val fabModifier = Modifier.size(60.dp)
+                    val iconSize = Modifier.size(32.dp)
 
-                val fabItems = listOf(
-                    Triple(Icons.Default.Home, "Home", Screen.Home.route),
-                    Triple(Icons.Default.Search, "Explore", Screen.Explore.route),
-                    Triple(Icons.Default.Person, "Profile", Screen.Profile.route)
-                )
+                    val fabItems = listOf(
+                        Triple(Icons.Default.Home, "Home", Screen.Home.route),
+                        Triple(Icons.Default.Search, "Explore", Screen.Explore.route),
+                        Triple(Icons.Default.Person, "Profile", Screen.Profile.route)
+                    )
 
-                fabItems.forEach { (icon, description, route) ->
-                    FloatingActionButton(
-                        onClick = { navController.navigate(route) },
-                        shape = CircleShape,
-                        modifier = fabModifier,
-                        containerColor = if (currentRoute == route) activeColor else inactiveColor
-                    ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = description,
-                            modifier = iconSize,
-                            tint = if (currentRoute == route) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                        )
+                    fabItems.forEach { (icon, description, route) ->
+                        FloatingActionButton(
+                            onClick = { navController.navigate(route) },
+                            shape = CircleShape,
+                            modifier = fabModifier,
+                            containerColor = if (currentRoute == route) activeColor else inactiveColor
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = description,
+                                modifier = iconSize,
+                                tint = if (currentRoute == route) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
                 }
             }
@@ -112,12 +121,24 @@ fun MainScreen() {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            startDestination = if (accountInfo == null) Screen.Setup.route else Screen.Home.route,
             modifier = Modifier.padding(paddingValues)
         ) {
-            composable(Screen.Home.route) { Home(categoryViewModel, newsReelViewModel) }
-            composable(Screen.Explore.route) { Explore(categoryViewModel, newsReelViewModel) }
-            composable(Screen.Profile.route) { Profile(categoryViewModel, newsReelViewModel ) }
+            composable(Screen.Setup.route) {
+                SetupAccountScreen { info ->
+                    accountInfo = info
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Setup.route) { inclusive = true }
+                    }
+                }
+            }
+            composable(Screen.Home.route) {accountInfo?.let { Home(categoryViewModel, newsReelViewModel, accountInfo)} }
+            composable(Screen.Explore.route) { accountInfo?.let {Explore(categoryViewModel, newsReelViewModel, accountInfo)} }
+            composable(Screen.Profile.route) {
+                accountInfo?.let {
+                    Profile(categoryViewModel, newsReelViewModel, it, navController)
+                }
+            }
         }
     }
 }

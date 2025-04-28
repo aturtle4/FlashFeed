@@ -1,28 +1,16 @@
 package com.example.flashfeed.Explore
 
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.FloatingActionButton
@@ -39,23 +27,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import com.example.flashfeed.Profile.AccountInfo
 import com.example.flashfeed.Profile.ArticleCard
-import com.example.flashfeed.Profile.CategoryItem
 import com.example.flashfeed.Profile.CategoryViewModel
 import com.example.flashfeed.Profile.NewsReelViewModel
-import com.example.flashfeed.reel_mechanism.NewsArticle
 import com.example.flashfeed.reel_mechanism.NewsReelScreen
 
 @Composable
-fun Explore(categoryViewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) {
+fun Explore(
+    categoryViewModel: CategoryViewModel,
+    newsReelViewModel: NewsReelViewModel,
+    accountInfo: AccountInfo?
+) {
     var launchNews by remember { mutableStateOf(false) }
     var catLaunchNews by remember { mutableStateOf(Pair(false, "Trending")) }
     var selectedIndex by remember { mutableStateOf(0) } // 🆕 Added
@@ -84,7 +69,8 @@ fun Explore(categoryViewModel: CategoryViewModel, newsReelViewModel: NewsReelVie
                 newsList = newsList,
                 viewModel = newsReelViewModel,
                 category = "Trending",
-                startIndex = selectedIndex // 🆕 Pass selected index
+                startIndex = selectedIndex,
+                accountInfo = accountInfo // 🆕 Pass selected index
             )
             FloatingActionButton(
                 onClick = { launchNews = false },
@@ -101,7 +87,8 @@ fun Explore(categoryViewModel: CategoryViewModel, newsReelViewModel: NewsReelVie
                 newsList = filteredNews,
                 viewModel = newsReelViewModel,
                 category = catLaunchNews.second,
-                startIndex = selectedIndex // 🆕 Pass selected index here too if needed
+                startIndex = selectedIndex,
+                accountInfo = accountInfo // 🆕 Pass selected index here too if needed
             )
             FloatingActionButton(
                 onClick = { catLaunchNews = Pair(false, catLaunchNews.second) },
@@ -120,7 +107,6 @@ fun Explore(categoryViewModel: CategoryViewModel, newsReelViewModel: NewsReelVie
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text("Explore", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold), modifier = Modifier.padding(top = 16.dp))
-            Text("Popular This Week", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),

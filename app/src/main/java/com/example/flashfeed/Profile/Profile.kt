@@ -3,15 +3,16 @@ package com.example.flashfeed.Profile
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -21,7 +22,8 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,20 +31,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.example.flashfeed.reel_mechanism.NewsArticle
 import com.example.flashfeed.reel_mechanism.NewsReelScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Profile(viewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) {
+fun Profile(
+    viewModel: CategoryViewModel,
+    newsReelViewModel: NewsReelViewModel,
+    accountInfo: AccountInfo,
+    navController: NavHostController
+) {
     var drawerOpen by remember { mutableStateOf(false) }
     val inverseOnSurface = MaterialTheme.colorScheme.onSurface.run {
         Color(1f - red, 1f - green, 1f - blue, alpha)
@@ -68,7 +76,7 @@ fun Profile(viewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) 
                 .background(MaterialTheme.colorScheme.background)
         ) {
             // NewsReelScreen as background
-            NewsReelScreen(newsList = news, newsReelViewModel, "TRENDING", startIndex = selectedSavedNewsIndex)
+            NewsReelScreen(newsList = news, newsReelViewModel, "TRENDING", startIndex = selectedSavedNewsIndex, accountInfo = accountInfo)
 
             // Floating Action Button as back
             FloatingActionButton(
@@ -85,18 +93,59 @@ fun Profile(viewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) 
                 )
             }
         }
+    } else if (drawerOpen) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                ) {
+                    Button(
+                        onClick = { drawerOpen = false },
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.height(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Settings",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                }
+                Divider(modifier = Modifier.padding(bottom = 8.dp))
+                TextButton(onClick = { navController.navigate("Setup") }) {
+                    Text(text = "Update Profile", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                }
+                CategorySelector(viewModel = viewModel)
+                LangSelector(accountInfo = accountInfo)
+            }
+        }
     } else {
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
             // Main Content
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
+                    .background(MaterialTheme.colorScheme.surface)
             ) {
-                ProfileHeader(userName = "aTurtle4")
+                ProfileHeader(accountInfo = accountInfo)
                 Spacer(modifier = Modifier.height(55.dp))
 
                 SavedArticles(news) {index ->
@@ -114,56 +163,21 @@ fun Profile(viewModel: CategoryViewModel, newsReelViewModel: NewsReelViewModel) 
             ) {
                 IconButton(onClick = { drawerOpen = !drawerOpen }) {
                     Icon(
-                        imageVector = Icons.Default.Menu,
+                        imageVector = Icons.Default.Settings,
                         modifier = Modifier.size(36.dp),
-                        tint = inverseOnSurface,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         contentDescription = "Settings-Menu"
                     )
                 }
             }
         }
     }
-        if (drawerOpen) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.3f))
-                    .pointerInput(Unit) {
-                        detectTapGestures(onTap = { drawerOpen = false })
-                    }
-            )
-        }
 
-        if (drawerOpen) {
-            Surface(
-                tonalElevation = 4.dp,
-                shadowElevation = 8.dp,
-                color = Color.White,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(280.dp)
-//                    .align(Alignment.TopStart)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(12.dp)
-                ) {
-                    Text(
-                        text = "Settings",
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    Divider(modifier = Modifier.padding(bottom = 8.dp))
-                    CategorySelector(viewModel = viewModel)
-                }
-            }
-        }
 }
 
 @Composable
 fun ProfileHeader(
-    userName: String,
+    accountInfo: AccountInfo,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -172,29 +186,9 @@ fun ProfileHeader(
         modifier = modifier
             .fillMaxWidth()
             .height(300.dp)
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.surface)
     ) {
-        Box(modifier = Modifier.fillMaxSize()
-            .background(Color.White)) {
-            // Top Row: "Profile" text and menu icon
-            Row(
-                modifier = Modifier
-
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Profile",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 25.sp,
-                    color = Color.Gray
-                )
-
-            }
-
-            // Center: User icon and name
+        Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -202,22 +196,37 @@ fun ProfileHeader(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "Profile Image",
-                    modifier = Modifier.size(175.dp),
-                    tint = Color.Gray
-                )
+                Log.d("image_null","${accountInfo.userIcon}")
+                if (accountInfo.userIcon != null) {
+                    // If a user image is set, show it
+                    Image(
+                        painter = rememberAsyncImagePainter(model = accountInfo.userIcon),
+                        contentDescription = "Profile Image",
+                        modifier = Modifier
+                            .size(175.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // Otherwise show default icon
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = "Default Profile Icon",
+                        modifier = Modifier.size(175.dp),
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                }
+
                 Text(
-                    text = userName,
+                    text = accountInfo.username, // <-- use username from AccountInfo
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
     }
 }
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -226,7 +235,7 @@ fun SavedArticles(articles: List<NewsArticle>, onArticleClick: (Int) -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         modifier = Modifier
             .fillMaxSize()
             .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 0.dp)
@@ -235,7 +244,8 @@ fun SavedArticles(articles: List<NewsArticle>, onArticleClick: (Int) -> Unit) {
             Text(
                 text = "Saved Articles",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             LazyVerticalGrid(
@@ -265,7 +275,7 @@ fun ArticleCard(article: NewsArticle, onClick: () -> Unit) {
         modifier = Modifier
             .aspectRatio(0.75f)
             .clip(RoundedCornerShape(20.dp))
-            .clickable {onClick()}
+            .clickable { onClick() }
     ) {
         AsyncImage(
             model = article.imageUrl,
@@ -289,7 +299,7 @@ fun ArticleCard(article: NewsArticle, onClick: () -> Unit) {
         // Title text at the bottom
         Text(
             text = article.title,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -300,6 +310,97 @@ fun ArticleCard(article: NewsArticle, onClick: () -> Unit) {
     }
 }
 
+@Composable
+fun LangSelector(accountInfo: AccountInfo) {
+    var isExpanded by remember { mutableStateOf(false) }
+    val languages = listOf("English", "Hindi", "Bengali", "Urdu")
+
+    // Track the current language selection
+    var selectedLanguage by remember { mutableStateOf(accountInfo.lang) }
+
+    val selectedCount = if (selectedLanguage.isNotEmpty()) 1 else 0
+    val context = LocalContext.current
+
+    Column {
+        // Row for expandable/collapsible button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { isExpanded = !isExpanded }
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Select Language",
+                style = MaterialTheme.typography.titleSmall,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = if (isExpanded) "Collapse" else "Expand",
+                tint = MaterialTheme.colorScheme.secondary
+            )
+        }
+
+        // Collapsible content
+        if (isExpanded) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                items(languages) { language ->
+                    val isSelected = selectedLanguage == language
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.onPrimary
+                                else MaterialTheme.colorScheme.onSecondary
+                            )
+                            .clickable(enabled = !isSelected) {
+                                selectedLanguage = language
+                                accountInfo.lang = selectedLanguage
+                                Toast.makeText(context, "Language set to $selectedLanguage", Toast.LENGTH_SHORT).show()
+
+                            }
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Language,
+                            contentDescription = language,
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = language,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 8.dp)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(16.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isSelected) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                                )
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 
@@ -309,9 +410,7 @@ fun CategorySelector(viewModel: CategoryViewModel) {
     val categorySelection = viewModel.categorySelection
     val selectedCount = categorySelection.values.count { it }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -323,12 +422,13 @@ fun CategorySelector(viewModel: CategoryViewModel) {
             Text(
                 text = "Categories ($selectedCount/5)",
                 style = MaterialTheme.typography.titleSmall,
-                fontSize = 14.sp
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Icon(
                 imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                 contentDescription = if (isExpanded) "Collapse" else "Expand",
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.secondary
             )
         }
 
@@ -350,8 +450,8 @@ fun CategorySelector(viewModel: CategoryViewModel) {
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
                             .background(
-                                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                                else MaterialTheme.colorScheme.surfaceVariant
+                                if (isSelected) MaterialTheme.colorScheme.onPrimary
+                                else MaterialTheme.colorScheme.onSecondary
                             )
                             .clickable(enabled = isEnabled && !isTrending) {
                                 if (!isTrending) viewModel.toggleCategory(category.name)
@@ -385,15 +485,10 @@ fun CategorySelector(viewModel: CategoryViewModel) {
                     }
                 }
             }
+            val context = LocalContext.current
 
             if (selectedCount == 5) {
-                Text(
-                    text = "Limit reached",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontSize = 10.sp,
-                    modifier = Modifier.padding(top = 4.dp, start = 8.dp, bottom = 4.dp)
-                )
+                Toast.makeText(context, "Limit reached", Toast.LENGTH_SHORT).show()
             }
         }
     }

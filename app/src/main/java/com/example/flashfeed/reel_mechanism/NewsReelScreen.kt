@@ -1,5 +1,6 @@
 package com.example.flashfeed.reel_mechanism
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -37,7 +38,12 @@ import com.example.flashfeed.Profile.NewsReelViewModel
 import com.example.flashfeed.R
 import kotlinx.coroutines.delay
 import java.util.*
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import androidx.annotation.RequiresPermission
 
+
+@RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NewsReelScreen(
@@ -64,7 +70,7 @@ fun NewsReelScreen(
         val scale: Int = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
         level * 100 / scale.toFloat()
     }
-
+    val networkType = getNetworkType(context)
     var currentVisiblePage by remember { mutableIntStateOf(startIndex) }
     var isAutoScrolling by remember { mutableStateOf(false) }
 
@@ -106,7 +112,8 @@ fun NewsReelScreen(
         if (!isAutoScrolling) {
             Log.d("Pagination", "Fetching more news at page: $currentVisiblePage")
             Log.d("Battery", "Battery percentage: $batteryPct")
-            val articlesToFetch = if (batteryPct != null && batteryPct < 30f && newsList.size - currentVisiblePage < 3) {
+            Log.d("Network Type", "Type: $networkType")
+            val articlesToFetch = if (((batteryPct != null && batteryPct < 30f ) || (networkType == "cellular"))&& newsList.size - currentVisiblePage < 3) {
                 newsList.size + 3 // Load 3 articles if battery < 30%
             } else if (newsList.size - currentVisiblePage < 5) {
                 newsList.size + 10 // Default: load 10 articles
@@ -284,4 +291,17 @@ fun openArticleInApp(context: Context, articleLink: String) {
     val intent = Intent(context, WebViewActivity::class.java)
     intent.putExtra("url", articleLink)
     context.startActivity(intent)
+}
+
+@RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+fun getNetworkType(context: Context): String {
+    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val network = connectivityManager.activeNetwork ?: return "none"
+    val networkCapabilities = connectivityManager.getNetworkCapabilities(network) ?: return "none"
+
+    return when {
+        networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+        networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "cellular"
+        else -> "other"
+    }
 }

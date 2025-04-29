@@ -2,7 +2,7 @@ package com.example.flashfeed.database
 
 import androidx.room.Dao
 import androidx.room.Insert
-import androidx.room.OnConflict
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
@@ -11,7 +11,7 @@ interface UserPreferencesDao {
     @Query("SELECT * FROM user_preferences WHERE id = 1")
     fun getUserPreferences(): Flow<UserPreferencesEntity?>
 
-    @Insert(onConflict = OnConflict.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUserPreferences(preferences: UserPreferencesEntity)
 
     @Query("UPDATE user_preferences SET username = :username WHERE id = 1")

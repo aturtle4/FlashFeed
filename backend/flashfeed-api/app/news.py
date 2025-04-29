@@ -70,8 +70,8 @@ def translate_text(article: dict, language: str) -> dict:
         language = 'hi'
     elif language.lower() == 'bengali':
         language = 'bn'
-    elif language.lower() == 'urdu':
-        language = 'ur'
+    elif language.lower() == 'arabic':
+        language = 'ar'
     else:
         language = 'en'
 

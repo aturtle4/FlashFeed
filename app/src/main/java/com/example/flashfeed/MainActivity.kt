@@ -1,6 +1,7 @@
 package com.example.flashfeed
 
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,6 +21,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +49,7 @@ import com.example.flashfeed.Misc.AboutTheAppScreen
 import com.example.flashfeed.Misc.PrivacyPolicyScreen
 import com.example.flashfeed.Misc.TermsAndConditionsScreen
 import com.example.flashfeed.Profile.AccountInfo
+import androidx.core.net.toUri
 
 
 class MainActivity : ComponentActivity() {
@@ -105,13 +109,13 @@ fun MainScreen() {
         factory = com.example.flashfeed.Profile.UserPreferencesViewModel.Factory(context.applicationContext as android.app.Application)
     )
 
-    val userPreferencesState by userPreferencesViewModel.userPreferences.collectAsState()
+    val userPreferencesState by userPreferencesViewModel.userPreferences.collectAsState(initial = null)
 
     LaunchedEffect(userPreferencesState) {
         userPreferencesState?.let { prefs ->
             accountInfo = AccountInfo(
                 username = prefs.username,
-                userIcon = Uri.parse(prefs.userImageUri),
+                userIcon = prefs.userImageUri?.toUri() ?: "".toUri(),
                 lang = prefs.language
             )
         }

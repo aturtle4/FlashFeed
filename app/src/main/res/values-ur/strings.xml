@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="language">زبان</string>
     <string name="welcome_message">فلیش فیڈ میں خوش آمدید</string>
     <string name="create_profile">اپنی پروفائل بنائیں</string>
     <string name="username">صارف کا نام</string>

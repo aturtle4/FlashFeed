@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="language">ভাষা</string>
     <string name="welcome_message">ফ্ল্যাশফিডে আপনাকে স্বাগতম</string>
     <string name="create_profile">আপনার প্রোফাইল তৈরি করুন</string>
     <string name="username">ব্যবহারকারীর নাম</string>

@@ -40,22 +40,24 @@ fun SplashScreen() {
     val context = LocalContext.current
     val composition = rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.splash))
 
+    LaunchedEffect(key1 = true) {
+        delay(2500)
+        context.startActivity(Intent(context, MainActivity::class.java))
+        if (context is ComponentActivity) {
+            context.finish()
+        }
+    }
+
     Box(
+        contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
+            .background(MaterialTheme.colorScheme.background)
     ) {
         LottieAnimation(
             composition = composition.value,
             iterations = LottieConstants.IterateForever,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(0.8f)
         )
-    }
-
-    LaunchedEffect(Unit) {
-        delay(650) // 650ms delay
-        context.startActivity(Intent(context, MainActivity::class.java))
-        (context as? ComponentActivity)?.finish()
     }
 }

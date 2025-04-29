@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
@@ -19,18 +20,21 @@ fun CategoryTopBar(
     onCategorySelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val pagerState = rememberPagerState(initialPage = selectedTab)
     val coroutineScope = rememberCoroutineScope()
 
     // Sync pager with the selectedTab from the parent
     LaunchedEffect(selectedTab) {
-        pagerState.animateScrollToPage(selectedTab)
+        if (pagerState.currentPage != selectedTab) {
+            pagerState.animateScrollToPage(selectedTab)
+        }
     }
 
     // Sync tab clicks & swipes
     LaunchedEffect(pagerState.currentPage) {
         if (pagerState.currentPage != selectedTab) {
-            onCategorySelected(pagerState.currentPage) // Update parent when user swipes
+            onCategorySelected(pagerState.currentPage)
         }
     }
 

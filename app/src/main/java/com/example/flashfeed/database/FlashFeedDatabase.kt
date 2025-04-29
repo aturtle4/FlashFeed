@@ -6,13 +6,14 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [SavedReelEntity::class, CategoryEntity::class],
-    version = 2,
+    entities = [SavedReelEntity::class, CategoryEntity::class, UserPreferencesEntity::class],
+    version = 3,
     exportSchema = false
 )
 abstract class FlashFeedDatabase : RoomDatabase() {
     abstract fun savedReelDao(): SavedReelDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun userPreferencesDao(): UserPreferencesDao
 
     companion object {
         @Volatile

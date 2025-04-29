@@ -101,6 +101,22 @@ fun MainScreen() {
         factory = NewsReelViewModel.Factory(context.applicationContext as android.app.Application)
     )
 
+    val userPreferencesViewModel: com.example.flashfeed.Profile.UserPreferencesViewModel = viewModel(
+        factory = com.example.flashfeed.Profile.UserPreferencesViewModel.Factory(context.applicationContext as android.app.Application)
+    )
+
+    val userPreferencesState by userPreferencesViewModel.userPreferences.collectAsState()
+
+    LaunchedEffect(userPreferencesState) {
+        userPreferencesState?.let { prefs ->
+            accountInfo = AccountInfo(
+                username = prefs.username,
+                userIcon = Uri.parse(prefs.userImageUri),
+                lang = prefs.language
+            )
+        }
+    }
+
     Scaffold(
         floatingActionButton = {
             if (accountInfo != null && currentRoute != Screen.Setup.route) {

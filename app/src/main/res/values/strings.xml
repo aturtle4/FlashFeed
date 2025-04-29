@@ -1,4 +1,5 @@
 <resources>
+    <string name="language">Language</string>
     <string name="app_name" translatable="false">FlashFeed</string>
     <string name="welcome_message">Welcome to FlashFeed</string>
     <string name="create_profile">Create your profile</string>

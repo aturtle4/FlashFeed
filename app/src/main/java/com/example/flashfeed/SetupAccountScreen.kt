@@ -32,6 +32,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import java.io.ByteArrayOutputStream
 import java.nio.file.WatchEvent
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.flashfeed.Profile.UserPreferencesViewModel
 
 @Composable
 fun SetupAccountScreen(
@@ -41,6 +43,10 @@ fun SetupAccountScreen(
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var showImagePickerDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    val userPreferencesViewModel: UserPreferencesViewModel = viewModel(
+        factory = UserPreferencesViewModel.Factory(context.applicationContext as android.app.Application)
+    )
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -109,6 +115,12 @@ fun SetupAccountScreen(
         Button(
             onClick = {
                 if (username.text.isNotBlank()) {
+                    // Save to database
+                    userPreferencesViewModel.saveUserPreferences(
+                        username.text,
+                        selectedImageUri?.toString(),
+                        "en"
+                    )
                     onSetupComplete(
                         AccountInfo(username.text, selectedImageUri, lang = "en")
                     )

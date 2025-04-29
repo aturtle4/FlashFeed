@@ -50,6 +50,8 @@ import com.example.flashfeed.reel_mechanism.NewsReelScreen
 import setAppLocale
 import androidx.core.content.edit
 import com.example.flashfeed.MainActivity
+import androidx.lifecycle.viewmodel.compose.viewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -130,7 +132,7 @@ fun Profile(
                     Text(text = stringResource(id = R.string.update_profile), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                 }
                 CategorySelector(viewModel = viewModel)
-                LangSelector(accountInfo = accountInfo)
+                LangSelector(accountInfo = accountInfo, navController = navController)
                 TextButton(onClick = { navController.navigate("PrivacyPolicy") }) {
                     Text(text = stringResource(id = R.string.privacy_policy), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                 }
@@ -318,95 +320,77 @@ fun ArticleCard(article: NewsArticle, onClick: () -> Unit) {
 }
 
 @Composable
-fun LangSelector(accountInfo: AccountInfo?) {
-    var isExpanded by remember { mutableStateOf(false) }
-    val languages = mapOf("English" to "en", "Hindi" to "hi", "Bengali" to "bn", "Urdu" to "ur")
+fun LangSelector(
+    accountInfo: AccountInfo?,
+    navController: NavHostController // Missing parameter
+) {
     val context = LocalContext.current
+    var expanded by remember { mutableStateOf(false) }
+    val languages = listOf("English" to "en", "हिन्दी" to "hi", "বাংলা" to "bn", "اردو" to "ur")
+    val currentLanguage = languages.find { it.second == accountInfo?.lang }?.first ?: "English"
 
-    // Get current language from LocaleUtils
-    val currentLocale = LocaleUtils.getLocaleString(context)
-
-    var selectedLanguage by remember {
-        mutableStateOf(languages.entries.find { it.value == currentLocale }?.key ?: "English")
-    }
+    // Add UserPreferencesViewModel
+    val userPreferencesViewModel: UserPreferencesViewModel = viewModel()
 
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { isExpanded = !isExpanded }
+                .clickable { expanded = !expanded }
                 .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Icon(
+                imageVector = Icons.Default.Language,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
             Text(
-                text = stringResource(id = R.string.select_language),
+                text = stringResource(id = R.string.language),
                 style = MaterialTheme.typography.titleSmall,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .weight(1f)
+            )
+            Text(
+                text = currentLanguage,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Icon(
-                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                contentDescription = if (isExpanded) "Collapse" else "Expand",
-                tint = MaterialTheme.colorScheme.secondary
+                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = null,
+                modifier = Modifier.padding(start = 8.dp)
             )
         }
 
-        if (isExpanded) {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(horizontal = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(languages.keys.toList()) { language ->
-                    val isSelected = selectedLanguage == language
-
-                    Row(
+        if (expanded) {
+            Column(modifier = Modifier.padding(start = 48.dp, end = 16.dp)) {
+                languages.forEach { (name, code) ->
+                    Text(
+                        text = name,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(
-                                if (isSelected) MaterialTheme.colorScheme.onPrimary
-                                else MaterialTheme.colorScheme.onSecondary
-                            )
-                            .clickable(enabled = !isSelected) {
-                                if (!isSelected) {
-                                    selectedLanguage = language
-                                    val langCode = languages[language] ?: "en"
+                            .clickable {
+                                if (code != accountInfo?.lang) {
+                                    // Update language in database
+                                    userPreferencesViewModel.updateLanguage(code)
 
-                                    // Update accountInfo
-                                    accountInfo?.lang = langCode
+                                    // Apply new locale
+                                    context.setAppLocale(code)
 
-                                    // Save language preference
-                                    LocaleUtils.setAppLocale(context, langCode)
-
-                                    // Restart the app
+                                    // Restart activity to apply language change
                                     val intent = Intent(context, MainActivity::class.java)
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                                            Intent.FLAG_ACTIVITY_NEW_TASK or
-                                            Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                     context.startActivity(intent)
                                     (context as? Activity)?.finish()
                                 }
+                                expanded = false
                             }
-                            .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Language,
-                            contentDescription = language,
-                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = language,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 8.dp)
-                        )
-                    }
+                            .padding(vertical = 12.dp),
+                        color = if (name == currentLanguage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
         }
@@ -419,21 +403,19 @@ fun CategorySelector(viewModel: CategoryViewModel) {
     val categorySelection = viewModel.categorySelection
     val selectedCount = categorySelection.values.count { it }
     val context = LocalContext.current
-    val languageMap = {
-        mapOf(
-            "National" to context.getString(R.string.national),
-            "Business" to context.getString(R.string.business),
-            "Sports" to context.getString(R.string.sports),
-            "World" to context.getString(R.string.world),
-            "Politics" to context.getString(R.string.politics),
-            "Technology" to context.getString(R.string.technology),
-            "Startup" to context.getString(R.string.startup),
-            "Entrepreneurship" to context.getString(R.string.entrepreneurship),
-            "Miscellaneous" to context.getString(R.string.miscellaneous),
-            "Science" to context.getString(R.string.science),
-            "Automobile" to context.getString(R.string.automobile)
-        )
-    }
+    val languageMap = mapOf(
+        "National" to context.getString(R.string.national),
+        "Business" to context.getString(R.string.business),
+        "Sports" to context.getString(R.string.sports),
+        "World" to context.getString(R.string.world),
+        "Politics" to context.getString(R.string.politics),
+        "Technology" to context.getString(R.string.technology),
+        "Startup" to context.getString(R.string.startup),
+        "Entrepreneurship" to context.getString(R.string.entrepreneurship),
+        "Miscellaneous" to context.getString(R.string.miscellaneous),
+        "Science" to context.getString(R.string.science),
+        "Automobile" to context.getString(R.string.automobile)
+    )
 
     Column {
         Row(
@@ -491,7 +473,7 @@ fun CategorySelector(viewModel: CategoryViewModel) {
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
-                            text = languageMap()[category.name] ?: category.name,
+                            text = languageMap[category.name] ?: category.name,
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 12.sp,
                             modifier = Modifier

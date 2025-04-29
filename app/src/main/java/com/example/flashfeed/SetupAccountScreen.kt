@@ -7,11 +7,14 @@ import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,12 +22,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import com.example.flashfeed.Profile.AccountInfo
+import androidx.compose.ui.graphics.Color
 import java.io.ByteArrayOutputStream
+import java.nio.file.WatchEvent
 
 @Composable
 fun SetupAccountScreen(
@@ -35,123 +41,108 @@ fun SetupAccountScreen(
     var showImagePickerDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Launcher for picking from gallery
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        selectedImageUri = uri
-    }
+    ) { uri: Uri? -> selectedImageUri = uri }
 
-    // Launcher for taking a photo with the camera
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { bitmap ->
-        bitmap?.let {
-            selectedImageUri = it.toImageUri(context)
-        }
+        bitmap?.let { selectedImageUri = it.toImageUri(context) }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .padding(horizontal = 24.dp, vertical = 36.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Set up your account", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            "Create your profile",
+            style = MaterialTheme.typography.headlineSmall,
+            color = Color(0xFF2EDFA1)
+        )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        Box(
-            contentAlignment = Alignment.Center,
+        Card(
             modifier = Modifier
                 .size(120.dp)
-                .border(
-                    width = 2.dp,
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape
-                )
-                .clickable {
-                    showImagePickerDialog = true
-                }
+                .clickable { showImagePickerDialog = true },
+            shape = CircleShape,
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             if (selectedImageUri != null) {
                 Image(
-                    painter = rememberAsyncImagePainter(model = selectedImageUri),
+                    painter = rememberAsyncImagePainter(selectedImageUri),
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(110.dp)
-                        .border(1.dp, MaterialTheme.colorScheme.primary, CircleShape),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
             } else {
-                // Placeholder image if no image selected
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_add_photo),
-                    contentDescription = "Add photo",
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AddAPhoto,
+                        contentDescription = "Add photo",
+                        tint = Color(0xFF2EDFA1),
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        BasicTextField(
+        OutlinedTextField(
             value = username,
             onValueChange = { username = it },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-                .border(1.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
-                .padding(12.dp),
-            decorationBox = { innerTextField ->
-                if (username.text.isEmpty()) {
-                    Text("Enter username", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                innerTextField()
-            }
+            label = { Text("Username") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         Button(
             onClick = {
                 if (username.text.isNotBlank()) {
                     onSetupComplete(
-                        AccountInfo(
-                            username = username.text, userIcon = selectedImageUri, lang = "English"
-                        )
+                        AccountInfo(username.text, selectedImageUri, lang = "English")
                     )
                 }
-            }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            shape = MaterialTheme.shapes.medium,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF2EDFA1),
+                contentColor = Color.White
+            )
         ) {
-            Text("Continue")
+            Text("Continue", style = MaterialTheme.typography.labelLarge)
         }
     }
 
-    // Dialog to choose between Gallery or Camera
     if (showImagePickerDialog) {
         AlertDialog(
             onDismissRequest = { showImagePickerDialog = false },
             title = { Text("Select Image") },
-            text = { Text("Choose an option") },
+            text = { Text("Choose a source for your profile picture") },
             confirmButton = {
                 TextButton(onClick = {
                     galleryLauncher.launch("image/*")
                     showImagePickerDialog = false
-                }) {
-                    Text("Gallery")
-                }
+                }) { Text("Gallery") }
             },
             dismissButton = {
                 TextButton(onClick = {
                     cameraLauncher.launch(null)
                     showImagePickerDialog = false
-                }) {
-                    Text("Camera")
-                }
+                }) { Text("Camera") }
             }
         )
     }

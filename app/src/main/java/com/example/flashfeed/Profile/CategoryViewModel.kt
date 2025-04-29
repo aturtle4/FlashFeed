@@ -97,14 +97,31 @@ class CategoryViewModel(application: Application) : AndroidViewModel(application
     private fun saveCategorySelection(name: String, isSelected: Boolean) {
         viewModelScope.launch {
             categoryDao.updateCategorySelection(name, isSelected)
+            refreshCategorySelectionFromDb()
         }
     }
+
+    private suspend fun refreshCategorySelectionFromDb() {
+        val updatedCategories = categoryDao.getAllCategories().first()
+        categorySelection.clear()
+        updatedCategories.forEach { entity ->
+            categorySelection[entity.name] = entity.isSelected
+        }
+    }
+
 
     fun getSelectedCategories(): List<CategoryItem> {
         return categoryItems.filter { categorySelection[it.name] == true }
     }
 
     fun getAllCategories(): List<CategoryItem> = categoryItems
+
+    fun refresh() {
+        viewModelScope.launch {
+            refreshCategorySelectionFromDb()
+        }
+    }
+
 
     // Factory for creating this ViewModel with application context
     class Factory(private val application: Application) : ViewModelProvider.Factory {

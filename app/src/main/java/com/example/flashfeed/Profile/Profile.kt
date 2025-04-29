@@ -53,6 +53,10 @@ fun Profile(
 ) {
     var drawerOpen by remember { mutableStateOf(false) }
 
+    val currentRoute = navController.currentBackStackEntry?.destination?.route
+
+// Log the current route
+    Log.d("NavController", "Current Route: $currentRoute")
     var openSavedNews by remember { mutableStateOf(false) }
     var selectedSavedNewsIndex by remember { mutableIntStateOf(0) }
 
@@ -99,11 +103,7 @@ fun Profile(
                         .fillMaxWidth()
                         .padding(bottom = 16.dp)
                 ) {
-                    Button(
-                        onClick = { drawerOpen = false },
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                        modifier = Modifier.height(36.dp)
-                    ) {
+                    IconButton(onClick = { drawerOpen = false }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"

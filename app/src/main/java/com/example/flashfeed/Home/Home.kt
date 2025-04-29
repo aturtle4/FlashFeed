@@ -23,6 +23,9 @@ fun Home(
     newsReelViewModel: NewsReelViewModel,
     accountInfo: AccountInfo?
 ) {
+    LaunchedEffect(Unit) {
+        categoryViewModel.refresh()
+    }
     val selectedCategories = categoryViewModel.getSelectedCategories()
     var selectedTab by remember { mutableStateOf(selectedCategories.firstOrNull()?.name ?: "Trending") }
 

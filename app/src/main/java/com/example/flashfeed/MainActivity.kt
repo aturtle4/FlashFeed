@@ -114,13 +114,13 @@ fun MainScreen() {
                             onClick = { navController.navigate(route) },
                             shape = CircleShape,
                             modifier = fabModifier,
-                            containerColor = if (currentRoute == route) activeColor else inactiveColor
+                            containerColor = if (currentRoute?.contains(route) == true ) activeColor else inactiveColor
                         ) {
                             Icon(
                                 imageVector = icon,
                                 contentDescription = description,
                                 modifier = iconSize,
-                                tint = if (currentRoute == route) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                                tint = if (currentRoute?.contains(route) == true) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }

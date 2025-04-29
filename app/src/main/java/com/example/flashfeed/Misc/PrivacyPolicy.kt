@@ -6,8 +6,10 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.flashfeed.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -15,7 +17,7 @@ fun PrivacyPolicyScreen(navController: NavHostController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Privacy Policy") },
+                title = { Text(stringResource(id = R.string.privacy_policy)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -35,12 +37,7 @@ fun PrivacyPolicyScreen(navController: NavHostController) {
             verticalArrangement = Arrangement.Top
         ) {
             Text(
-                text = "Privacy Policy",
-                style = MaterialTheme.typography.headlineSmall
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "We respect your privacy. FlashFeed collects no user data.",
+                text = stringResource(id = R.string.privacy_policy_text),
                 style = MaterialTheme.typography.bodyLarge
             )
         }

@@ -12,7 +12,8 @@ interface NewsAPI {
     suspend fun getNewsByCategory(
         @Query("category") category: String,
         @Query("count") count: Int = 10,
-        @Query("initial") initial: String
+        @Query("initial") initial: String,
+        @Query("language") language: String = "English"
     ): List<NewsArticle>
 }
 

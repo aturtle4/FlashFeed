@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_message">فلیش فیڈ میں خوش آمدید</string>
+    <string name="create_profile">اپنی پروفائل بنائیں</string>
+    <string name="username">صارف کا نام</string>
+    <string name="select_language">زبان منتخب کریں</string>
+    <string name="categories">اقسام</string>
+    <string name="terms_and_conditions">شرائط و ضوابط</string>
+    <string name="about_the_app">ایپ کے بارے میں</string>
+    <string name="privacy_policy">رازداری کی پالیسی</string>
+    <string name="update_profile">پروفائل اپ ڈیٹ کریں</string>
+    <string name="settings">ترتیبات</string>
+    <string name="national">قومی</string>
+    <string name="business">کاروبار</string>
+    <string name="sports">کھیل</string>
+    <string name="world">دنیا</string>
+    <string name="politics">سیاست</string>
+    <string name="technology">ٹیکنالوجی</string>
+    <string name="startup">اسٹارٹ اپ</string>
+    <string name="entrepreneurship">انٹرپرینیورشپ</string>
+    <string name="miscellaneous">متعدد</string>
+    <string name="science">متعدد</string>
+    <string name="automobile">موٹر گاڑی</string>
+    <string name="terms_and_conditions_text">فن‌لینڈ کو استعمال کرنے سے آپ ہماری خدمت کے حوالے سے متفق ہیں ۔ آپ اُن ہدایات پر عمل کرنے اور اُن کا احترام کرنے سے متفق ہیں جو آپ اُن کے اصولوں پر عمل کرتے ہیں ۔ اخباری ذرائع میں سرمایہ کاری کے لیے سرمایہ کاری کا الزام نہیں ہے۔.</string>
+    <string name="privacy_policy_text">م آپ کی خلوت کا احترام کرتے ہیں. فلیش فرائڈ نے کوئی صارف اعداد جمع نہیں کیے۔</string>
+    <string name="about_the_app_text">فلیش فرائڈ آپ کو ایک سادہ اور تیز رفتار سیریز میں حقیقی خبریں اپلوڈ کرتا ہے۔ خبردار رہو، آگے رہو!</string>
+</resources>

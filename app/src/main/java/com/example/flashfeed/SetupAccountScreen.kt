@@ -29,6 +29,7 @@ import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import com.example.flashfeed.Profile.AccountInfo
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import java.io.ByteArrayOutputStream
 import java.nio.file.WatchEvent
 
@@ -58,7 +59,7 @@ fun SetupAccountScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "Create your profile",
+            stringResource(id = R.string.create_profile),
             style = MaterialTheme.typography.headlineSmall,
             color = Color(0xFF2EDFA1)
         )
@@ -99,18 +100,17 @@ fun SetupAccountScreen(
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
-            label = { Text("Username") },
+            label = { Text(stringResource(id = R.string.username)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
 
         Spacer(modifier = Modifier.height(32.dp))
-
         Button(
             onClick = {
                 if (username.text.isNotBlank()) {
                     onSetupComplete(
-                        AccountInfo(username.text, selectedImageUri, lang = "English")
+                        AccountInfo(username.text, selectedImageUri, lang = "en")
                     )
                 }
             },

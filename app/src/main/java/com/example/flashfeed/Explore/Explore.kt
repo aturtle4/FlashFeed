@@ -43,12 +43,11 @@ fun Explore(
 ) {
     var launchNews by remember { mutableStateOf(false) }
     var catLaunchNews by remember { mutableStateOf(Pair(false, "Trending")) }
-    var selectedIndex by remember { mutableStateOf(0) } // 🆕 Added
-    val pageSize = 20
+    var selectedIndex by remember { mutableStateOf(0) } //  Added
     var currentPage by remember { mutableStateOf(1) }
     var isLoading by remember { mutableStateOf(false) }
     val newsList by remember { derivedStateOf { newsReelViewModel.newsList } }
-
+    val language = accountInfo?.lang
     val gridState = rememberLazyGridState()
 
     LaunchedEffect(gridState) {
@@ -57,7 +56,7 @@ fun Explore(
                 if (lastVisibleItemIndex == gridState.layoutInfo.totalItemsCount - 1 && !isLoading) {
                     isLoading = true
                     currentPage++
-                    newsReelViewModel.fetchNews("Trending", currentPage * 12, false)
+                    newsReelViewModel.fetchNews("Trending", currentPage * 12, language.toString(), false)
                     isLoading = false
                 }
             }

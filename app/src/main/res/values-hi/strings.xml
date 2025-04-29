@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_message">फ्लैशफीड में आपका स्वागत है</string>
+    <string name="create_profile">अपनी प्रोफ़ाइल बनाएं</string>
+    <string name="username">उपयोगकर्ता नाम</string>
+    <string name="select_language">भाषा चुनें</string>
+    <string name="categories">श्रेणियाँ</string>
+    <string name="terms_and_conditions">नियम और शर्तें</string>
+    <string name="about_the_app">ऐप के बारे में</string>
+    <string name="privacy_policy">गोपनीयता नीति</string>
+    <string name="update_profile">प्रोफ़ाइल अपडेट करें</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="national">राष्ट्रीय</string>
+    <string name="business">व्यापार</string>
+    <string name="sports">खेल</string>
+    <string name="world">दुनिया</string>
+    <string name="politics">राजनीति</string>
+    <string name="technology">टैकनोलजी</string>
+    <string name="startup">स्टार्टअप</string>
+    <string name="entrepreneurship">उद्यमशीलता</string>
+    <string name="miscellaneous">फुटकर</string>
+    <string name="science">विज्ञान</string>
+    <string name="automobile">मोटर</string>
+    <string name="terms_and_conditions_text">FlashFeed का उपयोग करके, आप हमारी सेवा की शर्तों पर सहमत हैं। आप आवेदन का दुरुपयोग करने और सामग्री दिशानिर्देशों का सम्मान करने के लिए सहमत नहीं हैं। FlashFeed समाचार स्रोतों में अशुद्धियों के लिए उत्तरदायी नहीं है।.</string>
+    <string name="privacy_policy_text">हम आपकी गोपनीयता का सम्मान करते हैं। FlashFeed कोई उपयोगकर्ता डेटा एकत्र करता है।.</string>
+    <string name="about_the_app_text">FlashFeed आपको एक सरल और तेज रील-स्टाइल इंटरफेस में रीयल-टाइम समाचार अपडेट लाता है। सूचित रहें, आगे रहें!</string>
+</resources>

@@ -123,14 +123,35 @@ class NewsReelViewModel(application: Application) : AndroidViewModel(application
         return _savedNewsFlow.value
     }
 
-    fun fetchNews(category: String, count: Int = pageSize + 5, initial: Boolean = true): List<NewsArticle> {
+    fun fetchNews(category: String, count: Int = pageSize + 5, language: String = "English", initial: Boolean = true): List<NewsArticle> {
         if (isFetchingMore) return emptyList()
         isFetchingMore = true
         if (initial) isLoading = true // Only show loading for initial fetch
+        var lang = ""
+        if (language == "en")
+        {
+            lang = "English"
+        }
+        else if (language == "hi")
+        {
+            lang = "Hindi"
+        }
+        else if (language == "bn")
+        {
+            lang = "Bengali"
+        }
+        else if (language == "ur")
+        {
+            lang = "Urdu"
+        }
+        else
+        {
+            lang = language
+        }
 
         viewModelScope.launch {
             try {
-                val response = RetrofitInstance.api.getNewsByCategory(category, count, initial.toString())
+                val response = RetrofitInstance.api.getNewsByCategory(category, count, initial.toString(), lang)
                 if (initial) {
                     newsList = response
                 } else {

@@ -6,8 +6,10 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.flashfeed.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -15,7 +17,7 @@ fun TermsAndConditionsScreen(navController: NavHostController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Terms and Conditions") },
+                title = { Text(stringResource(id = R.string.terms_and_conditions)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -35,12 +37,7 @@ fun TermsAndConditionsScreen(navController: NavHostController) {
             verticalArrangement = Arrangement.Top
         ) {
             Text(
-                text = "Terms and Conditions",
-                style = MaterialTheme.typography.headlineSmall
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "By using FlashFeed, you agree to our terms of service. You agree not to misuse the application and respect the content guidelines. FlashFeed is not liable for inaccuracies in the news sources.",
+                text = stringResource(id = R.string.terms_and_conditions_text),
                 style = MaterialTheme.typography.bodyLarge
             )
         }

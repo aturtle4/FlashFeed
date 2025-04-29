@@ -1,5 +1,8 @@
 package com.example.flashfeed.Profile
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -33,6 +36,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -40,8 +44,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import com.example.flashfeed.R
 import com.example.flashfeed.reel_mechanism.NewsArticle
 import com.example.flashfeed.reel_mechanism.NewsReelScreen
+import setAppLocale
+import androidx.core.content.edit
+import com.example.flashfeed.MainActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,18 +127,18 @@ fun Profile(
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
                 TextButton(onClick = { navController.navigate("Setup") }) {
-                    Text(text = "Update Profile", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                    Text(text = stringResource(id = R.string.update_profile), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                 }
                 CategorySelector(viewModel = viewModel)
                 LangSelector(accountInfo = accountInfo)
                 TextButton(onClick = { navController.navigate("PrivacyPolicy") }) {
-                    Text(text = "Privacy Profile", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                    Text(text = stringResource(id = R.string.privacy_policy), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                 }
                 TextButton(onClick = { navController.navigate("TermsAndConditions") }) {
-                    Text(text = "Terms & Conditions", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                    Text(text = stringResource(id = R.string.terms_and_conditions), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                 }
                 TextButton(onClick = { navController.navigate("AboutTheApp") }) {
-                    Text(text = "About the App", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                    Text(text = stringResource(id = R.string.about_the_app), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         }
@@ -312,15 +320,17 @@ fun ArticleCard(article: NewsArticle, onClick: () -> Unit) {
 @Composable
 fun LangSelector(accountInfo: AccountInfo?) {
     var isExpanded by remember { mutableStateOf(false) }
-    val languages = listOf("English", "Hindi", "Bengali", "Urdu")
-
-    // Track the current language selection
-    var selectedLanguage by remember { mutableStateOf(accountInfo?.lang) }
-
+    val languages = mapOf("English" to "en", "Hindi" to "hi", "Bengali" to "bn", "Urdu" to "ur")
     val context = LocalContext.current
 
+    // Get current language from LocaleUtils
+    val currentLocale = LocaleUtils.getLocaleString(context)
+
+    var selectedLanguage by remember {
+        mutableStateOf(languages.entries.find { it.value == currentLocale }?.key ?: "English")
+    }
+
     Column {
-        // Row for expandable/collapsible button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -330,7 +340,7 @@ fun LangSelector(accountInfo: AccountInfo?) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Select Language",
+                text = stringResource(id = R.string.select_language),
                 style = MaterialTheme.typography.titleSmall,
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurface
@@ -342,15 +352,13 @@ fun LangSelector(accountInfo: AccountInfo?) {
             )
         }
 
-        // Collapsible content
         if (isExpanded) {
             LazyColumn(
                 modifier = Modifier
-                    .weight(1f)
                     .padding(horizontal = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                items(languages) { language ->
+                items(languages.keys.toList()) { language ->
                     val isSelected = selectedLanguage == language
 
                     Row(
@@ -362,10 +370,24 @@ fun LangSelector(accountInfo: AccountInfo?) {
                                 else MaterialTheme.colorScheme.onSecondary
                             )
                             .clickable(enabled = !isSelected) {
-                                selectedLanguage = language
-                                accountInfo?.lang = selectedLanguage.toString()
-                                Toast.makeText(context, "Language set to $selectedLanguage", Toast.LENGTH_SHORT).show()
+                                if (!isSelected) {
+                                    selectedLanguage = language
+                                    val langCode = languages[language] ?: "en"
 
+                                    // Update accountInfo
+                                    accountInfo?.lang = langCode
+
+                                    // Save language preference
+                                    LocaleUtils.setAppLocale(context, langCode)
+
+                                    // Restart the app
+                                    val intent = Intent(context, MainActivity::class.java)
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                            Intent.FLAG_ACTIVITY_NEW_TASK or
+                                            Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                    context.startActivity(intent)
+                                    (context as? Activity)?.finish()
+                                }
                             }
                             .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -384,15 +406,6 @@ fun LangSelector(accountInfo: AccountInfo?) {
                                 .weight(1f)
                                 .padding(start = 8.dp)
                         )
-                        Box(
-                            modifier = Modifier
-                                .size(16.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
-                                )
-                        )
                     }
                 }
             }
@@ -400,13 +413,27 @@ fun LangSelector(accountInfo: AccountInfo?) {
     }
 }
 
-
-
 @Composable
 fun CategorySelector(viewModel: CategoryViewModel) {
     var isExpanded by remember { mutableStateOf(false) }
     val categorySelection = viewModel.categorySelection
     val selectedCount = categorySelection.values.count { it }
+    val context = LocalContext.current
+    val languageMap = {
+        mapOf(
+            "National" to context.getString(R.string.national),
+            "Business" to context.getString(R.string.business),
+            "Sports" to context.getString(R.string.sports),
+            "World" to context.getString(R.string.world),
+            "Politics" to context.getString(R.string.politics),
+            "Technology" to context.getString(R.string.technology),
+            "Startup" to context.getString(R.string.startup),
+            "Entrepreneurship" to context.getString(R.string.entrepreneurship),
+            "Miscellaneous" to context.getString(R.string.miscellaneous),
+            "Science" to context.getString(R.string.science),
+            "Automobile" to context.getString(R.string.automobile)
+        )
+    }
 
     Column {
         Row(
@@ -418,7 +445,7 @@ fun CategorySelector(viewModel: CategoryViewModel) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Categories ($selectedCount/5)",
+                text = "${stringResource(R.string.categories)} ($selectedCount/5)",
                 style = MaterialTheme.typography.titleSmall,
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurface
@@ -464,7 +491,7 @@ fun CategorySelector(viewModel: CategoryViewModel) {
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
-                            text = category.name.replaceFirstChar { it.uppercase() },
+                            text = languageMap()[category.name] ?: category.name,
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 12.sp,
                             modifier = Modifier

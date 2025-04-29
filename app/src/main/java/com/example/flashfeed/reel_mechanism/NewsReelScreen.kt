@@ -113,7 +113,7 @@ fun NewsReelScreen(
             } else {
                 newsList.size // No need to load more
             }
-            viewModel.fetchNews(category, articlesToFetch, false)
+            viewModel.fetchNews(category, articlesToFetch, language.toString(), false)
         }
     }
 

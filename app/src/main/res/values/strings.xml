@@ -1,3 +1,27 @@
 <resources>
-    <string name="app_name">FlashFeed</string>
+    <string name="app_name" translatable="false">FlashFeed</string>
+    <string name="welcome_message">Welcome to FlashFeed</string>
+    <string name="create_profile">Create your profile</string>
+    <string name="username">Username</string>
+    <string name="select_language">Select Language</string>
+    <string name="categories">Categories</string>
+    <string name="terms_and_conditions">Terms and Conditions</string>
+    <string name="about_the_app">About the App</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="update_profile">Update Profile</string>
+    <string name="settings">Settings</string>
+    <string name="national">National</string>
+    <string name="business">Business</string>
+    <string name="sports">Sports</string>
+    <string name="world">World</string>
+    <string name="politics">Politics</string>
+    <string name="technology">Technology</string>
+    <string name="startup">Startup</string>
+    <string name="entrepreneurship">Entrepreneurship</string>
+    <string name="miscellaneous">Miscellaneous</string>
+    <string name="science">Science</string>
+    <string name="automobile">Automobile</string>
+    <string name="terms_and_conditions_text">By using FlashFeed, you agree to our terms of service. You agree not to misuse the application and respect the content guidelines. FlashFeed is not liable for inaccuracies in the news sources.</string>
+    <string name="privacy_policy_text">We respect your privacy. FlashFeed collects no user data.</string>
+    <string name="about_the_app_text">FlashFeed brings you real-time news updates in a simple and fast reels-style interface. Stay informed, stay ahead!</string>
 </resources>

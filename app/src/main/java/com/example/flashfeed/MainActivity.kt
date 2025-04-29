@@ -1,5 +1,6 @@
 package com.example.flashfeed
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -48,9 +49,13 @@ import com.example.flashfeed.Profile.AccountInfo
 
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Get and apply saved language
+        val languageCode = LocaleUtils.getLocaleString(this)
+        LocaleUtils.setAppLocale(this, languageCode)
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
         setContent {
@@ -58,6 +63,12 @@ class MainActivity : ComponentActivity() {
                 MainScreen()
             }
         }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        // Apply language configuration before attaching base context
+        val languageCode = LocaleUtils.getLocaleString(newBase)
+        super.attachBaseContext(LocaleUtils.setAppLocale(newBase, languageCode))
     }
 }
 sealed class Screen(val route: String){
@@ -96,7 +107,7 @@ fun MainScreen() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
+                        .padding(start=32.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {

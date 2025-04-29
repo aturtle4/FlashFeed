@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_message">ফ্ল্যাশফিডে আপনাকে স্বাগতম</string>
+    <string name="create_profile">আপনার প্রোফাইল তৈরি করুন</string>
+    <string name="username">ব্যবহারকারীর নাম</string>
+    <string name="select_language">ভাষা নির্বাচন করুন</string>
+    <string name="categories">বিভাগসমূহ</string>
+    <string name="terms_and_conditions">শর্তাবলী</string>
+    <string name="about_the_app">অ্যাপ সম্পর্কে</string>
+    <string name="privacy_policy">গোপনীয়তা নীতি</string>
+    <string name="update_profile">প্রোফাইল আপডেট করুন</string>
+    <string name="settings">সেটিংস</string>
+    <string name="national">জাতীয়</string>
+    <string name="business">ব্যবসা</string>
+    <string name="sports">খেলাধুলা</string>
+    <string name="world">বিশ্ব</string>
+    <string name="politics">রাজনীতি</string>
+    <string name="technology">প্রযুক্তি</string>
+    <string name="startup">স্টার্টাপ</string>
+    <string name="entrepreneurship">উদ্যোক্তা</string>
+    <string name="miscellaneous">বিবিধ</string>
+    <string name="science">বিজ্ঞান</string>
+    <string name="automobile">অটোমোবাইল</string>
+    <string name="terms_and_conditions_text">ফ্ল্যাশফিড ব্যবহার করে, তুমি আমাদের সেবার শর্ত মেনে নাও। আপনি আবেদনের অপব্যবহার করবেন না এবং বিষয়বস্তুর নীতিমালাকে সম্মান করবেন না। সংবাদ উৎসে ফ্ল্যাশফিডের জন্য দায়ী নয়।.</string>
+    <string name="privacy_policy_text">আমরা আপনার গোপনীয়তাকে সম্মান করি। Flashfeed কোনো ব্যবহারকারী তথ্য সংগ্রহ করতে সক্ষম হয় না।.</string>
+    <string name="about_the_app_text">ফ্ল্যাশফিড একটি সহজ এবং দ্রুত বর্তনী স্টাইল ইন্টারফেসের তাজা সংবাদ প্রদান করে। সতর্ক থাকো, সামনে যাও!</string>
+</resources>

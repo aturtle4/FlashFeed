@@ -39,6 +39,8 @@ import com.example.flashfeed.Profile.NewsReelViewModel
 import com.example.flashfeed.Profile.Profile
 import com.example.flashfeed.ui.theme.FlashFeedTheme
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.example.flashfeed.Misc.AboutTheAppScreen
 import com.example.flashfeed.Misc.PrivacyPolicyScreen
 import com.example.flashfeed.Misc.TermsAndConditionsScreen
@@ -150,10 +152,16 @@ fun MainScreen() {
             }
             composable(Screen.Home.route) {accountInfo?.let { Home(categoryViewModel, newsReelViewModel, accountInfo)} }
             composable(Screen.Explore.route) { accountInfo?.let {Explore(categoryViewModel, newsReelViewModel, accountInfo)} }
-            composable(Screen.Profile.route) {
-                accountInfo?.let {
-                    Profile(categoryViewModel, newsReelViewModel, it, navController)
-                }
+            composable(
+                route = "Profile?openDrawer={openDrawer}",
+                arguments = listOf(navArgument("openDrawer") { type = NavType.StringType; defaultValue = "false" })
+            ) {
+                Profile(
+                    viewModel = viewModel(),
+                    newsReelViewModel = newsReelViewModel,
+                    accountInfo = accountInfo,
+                    navController = navController
+                )
             }
         }
     }

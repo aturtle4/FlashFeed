@@ -1,8 +1,9 @@
 package com.example.flashfeed.reel_mechanism
 
-import com.example.flashfeed.Profile.NewsReelViewModel
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.BatteryManager
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
@@ -32,10 +33,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.rememberAsyncImagePainter
 import com.example.flashfeed.Profile.AccountInfo
+import com.example.flashfeed.Profile.NewsReelViewModel
 import com.example.flashfeed.R
 import kotlinx.coroutines.delay
 import java.util.*
-
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -54,6 +55,15 @@ fun NewsReelScreen(
     val language = accountInfo?.lang
     var isSpeaking by remember { mutableStateOf(false) }
     var displayedWords by remember { mutableStateOf("") }
+    val batteryStatus: Intent? = IntentFilter(Intent.ACTION_BATTERY_CHANGED).let { filter ->
+        context.registerReceiver(null, filter)
+    }
+
+    val batteryPct: Float? = batteryStatus?.let { intent ->
+        val level: Int = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+        val scale: Int = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+        level * 100 / scale.toFloat()
+    }
 
     var currentVisiblePage by remember { mutableIntStateOf(startIndex) }
     var isAutoScrolling by remember { mutableStateOf(false) }
@@ -93,9 +103,17 @@ fun NewsReelScreen(
     // Track user scroll and fetch more data if needed
     LaunchedEffect(pagerState.currentPage) {
         currentVisiblePage = pagerState.currentPage
-        if (!isAutoScrolling && currentVisiblePage % 5 == 0 && currentVisiblePage != 0) {
+        if (!isAutoScrolling) {
             Log.d("Pagination", "Fetching more news at page: $currentVisiblePage")
-            viewModel.fetchNews(category, currentVisiblePage + 10, false)
+            Log.d("Battery", "Battery percentage: $batteryPct")
+            val articlesToFetch = if (batteryPct != null && batteryPct < 30f && newsList.size - currentVisiblePage < 3) {
+                newsList.size + 3 // Load 3 articles if battery < 30%
+            } else if (newsList.size - currentVisiblePage < 5) {
+                newsList.size + 10 // Default: load 10 articles
+            } else {
+                newsList.size // No need to load more
+            }
+            viewModel.fetchNews(category, articlesToFetch, false)
         }
     }
 
@@ -150,7 +168,6 @@ fun NewsReelScreen(
             }
         }
 
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -196,7 +213,6 @@ fun NewsReelScreen(
                     .align(Alignment.BottomStart),
                 verticalArrangement = Arrangement.Bottom
             ) {
-
                 Text(
                     text = "# ${news.title}",
                     fontSize = 14.sp,
@@ -254,7 +270,6 @@ fun NewsReelScreen(
     }
 }
 
-
 // Function to share the article link
 fun shareNews(context: Context, articleLink: String) {
     val shareIntent = Intent().apply {
@@ -265,7 +280,7 @@ fun shareNews(context: Context, articleLink: String) {
     context.startActivity(Intent.createChooser(shareIntent, "Share via"))
 }
 
-fun openArticleInApp(context: Context, articleLink: String){
+fun openArticleInApp(context: Context, articleLink: String) {
     val intent = Intent(context, WebViewActivity::class.java)
     intent.putExtra("url", articleLink)
     context.startActivity(intent)

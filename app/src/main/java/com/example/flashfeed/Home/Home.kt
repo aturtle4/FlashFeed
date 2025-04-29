@@ -83,7 +83,7 @@ fun TopBar(
 fun GetRespNews(category: String, viewModel: NewsReelViewModel, accountInfo: AccountInfo?) {
     LaunchedEffect(category) {
         println(category)
-        viewModel.fetchNews(category)
+        viewModel.fetchNews(category, 10)
     }
 
     if (viewModel.isLoading) {

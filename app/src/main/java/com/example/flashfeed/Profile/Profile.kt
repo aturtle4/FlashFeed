@@ -1,12 +1,11 @@
 package com.example.flashfeed.Profile
 
-import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -18,13 +17,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,26 +48,16 @@ import com.example.flashfeed.reel_mechanism.NewsReelScreen
 fun Profile(
     viewModel: CategoryViewModel,
     newsReelViewModel: NewsReelViewModel,
-    accountInfo: AccountInfo,
+    accountInfo: AccountInfo?,
     navController: NavHostController
 ) {
     var drawerOpen by remember { mutableStateOf(false) }
-    val inverseOnSurface = MaterialTheme.colorScheme.onSurface.run {
-        Color(1f - red, 1f - green, 1f - blue, alpha)
-    }
 
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false
-    )
-    val savedCardHeightCollapsed = 180.dp
-    val savedCardHeightExpanded = 500.dp
     var openSavedNews by remember { mutableStateOf(false) }
-    var openLikedNews by remember { mutableStateOf(false) }
     var selectedSavedNewsIndex by remember { mutableIntStateOf(0) }
 
 
     val news by newsReelViewModel.savedNewsFlow.collectAsState()
-    val likedNews by newsReelViewModel.likedNewsFlow.collectAsState()
 
     if (openSavedNews) {
         Box(
@@ -87,7 +77,7 @@ fun Profile(
                     .padding(16.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back to Profile",
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
@@ -115,7 +105,7 @@ fun Profile(
                         modifier = Modifier.height(36.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -125,7 +115,9 @@ fun Profile(
                         style = MaterialTheme.typography.headlineSmall
                     )
                 }
-                Divider(modifier = Modifier.padding(bottom = 8.dp))
+                HorizontalDivider(
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
                 TextButton(onClick = { navController.navigate("Setup") }) {
                     Text(text = "Update Profile", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                 }
@@ -186,7 +178,7 @@ fun Profile(
 
 @Composable
 fun ProfileHeader(
-    accountInfo: AccountInfo,
+    accountInfo: AccountInfo?,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -205,15 +197,17 @@ fun ProfileHeader(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Log.d("image_null","${accountInfo.userIcon}")
-                if (accountInfo.userIcon != null) {
+                Log.d("image_null","${accountInfo?.userIcon}")
+                if (accountInfo?.userIcon != null) {
                     // If a user image is set, show it
                     Image(
                         painter = rememberAsyncImagePainter(model = accountInfo.userIcon),
                         contentDescription = "Profile Image",
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(175.dp),
-                        contentScale = ContentScale.Crop
+                            .size(175.dp)
+                            .clip(CircleShape)
+                            .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
                     )
                 } else {
                     // Otherwise show default icon
@@ -226,7 +220,7 @@ fun ProfileHeader(
                 }
 
                 Text(
-                    text = accountInfo.username, // <-- use username from AccountInfo
+                    text = accountInfo?.username ?: "User", // <-- use username from AccountInfo
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     color = MaterialTheme.colorScheme.onSurface
@@ -276,10 +270,6 @@ fun SavedArticles(articles: List<NewsArticle>, onArticleClick: (Int) -> Unit) {
 
 @Composable
 fun ArticleCard(article: NewsArticle, onClick: () -> Unit) {
-    val context = LocalContext.current
-    val intent = remember(article.articleLink) {
-        Intent(Intent.ACTION_VIEW, Uri.parse(article.articleLink))
-    }
     Box(
         modifier = Modifier
             .aspectRatio(0.75f)
@@ -320,14 +310,13 @@ fun ArticleCard(article: NewsArticle, onClick: () -> Unit) {
 }
 
 @Composable
-fun LangSelector(accountInfo: AccountInfo) {
+fun LangSelector(accountInfo: AccountInfo?) {
     var isExpanded by remember { mutableStateOf(false) }
     val languages = listOf("English", "Hindi", "Bengali", "Urdu")
 
     // Track the current language selection
-    var selectedLanguage by remember { mutableStateOf(accountInfo.lang) }
+    var selectedLanguage by remember { mutableStateOf(accountInfo?.lang) }
 
-    val selectedCount = if (selectedLanguage.isNotEmpty()) 1 else 0
     val context = LocalContext.current
 
     Column {
@@ -374,7 +363,7 @@ fun LangSelector(accountInfo: AccountInfo) {
                             )
                             .clickable(enabled = !isSelected) {
                                 selectedLanguage = language
-                                accountInfo.lang = selectedLanguage
+                                accountInfo?.lang = selectedLanguage.toString()
                                 Toast.makeText(context, "Language set to $selectedLanguage", Toast.LENGTH_SHORT).show()
 
                             }

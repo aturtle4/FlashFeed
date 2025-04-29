@@ -29,11 +29,13 @@ def fetch_news(category: str, initial: str, count: int = Query(..., le=25), lang
     if not news_response or "articles" not in news_response:
         return {"error": "Failed to fetch news", "details": "Unable to retrieve articles"}
 
-    # Convert unix to datetime
+    # Convert unix to datetime and the published_at field to something like 2 hours ago
     from datetime import datetime
     for article in news_response["articles"]:
         if "published_at" in article:
-            article["published_at"] = datetime.utcfromtimestamp(article["published_at"] // 1000).strftime('%Y-%m-%d %H:%M:%S')
+            published_at = datetime.utcfromtimestamp(article["published_at"] // 1000).strftime('%Y-%m-%d %H:%M:%S')
+            # Convert to a human-readable format like "2 hours ago"
+            article["published_at"] = f"{(datetime.now() - datetime.strptime(published_at, '%Y-%m-%d %H:%M:%S')).seconds // 3600} hours ago"
 
     # Format the results
     result = []
@@ -51,64 +53,54 @@ def fetch_news(category: str, initial: str, count: int = Query(..., le=25), lang
         
         # Translate if needed
         if language.lower() != "english":
-            news_item["title"] = translate_text(article["title"], language)
-            news_item["content"] = translate_text(article["content"], language)
-            news_item["language"] = language
+            news_item = translate_text(news_item, language)
             
         result.append(news_item)
     
     return result
 
-# Add a new endpoint to get available categories via trending topics
-@router.get("/news/categories")
-def get_categories():
-    news_service = NewsService()
-    trending_topics = news_service.get_trending_topics()
-    
-    categories = [
-        topic["topic"].lower() 
-        for topic in trending_topics.get("topics", [])
-        if topic["type"] == "NEWS_CATEGORY"
-    ]
-    
-    # Add standard categories
-    standard_categories = ["all", "top", "trending"]
-    categories = standard_categories + sorted(list(set(categories)))
-    
-    return {
-        "success": True,
-        "categories": categories
+# Helper function to translate
+def translate_text(article: dict, language: str) -> dict:
+    # Translate using api call on localhost
+    # Api call is http://localhost:5000/translate
+
+    # Change to language code for the entire string
+    # For example, if language is 'hindi', change to 'hi'
+    if language.lower() == 'hindi':
+        language = 'hi'
+    elif language.lower() == 'bengali':
+        language = 'bn'
+    elif language.lower() == 'urdu':
+        language = 'ur'
+    else:
+        language = 'en'
+
+
+    # Setting up the headers and data for the request
+    headers = {
+        'Content-Type': 'application/json'
     }
 
-# Add a new search endpoint
-@router.get("/news/search")
-def search_news(query: str, count: int = Query(..., le=25), language: str = "english"):
-    news_service = NewsService()
-    search_response = news_service.get_searched_news(query, 0, count)
-    
-    if not search_response or "articles" not in search_response:
-        return {"error": "No results found", "details": "No articles matching your search query"}
-    
-    # Format the results
-    result = []
-    for i, article in enumerate(search_response["articles"], 1):
-        news_item = {
-            "id": i,
-            "title": article["title"],
-            "content": article["content"],
-            "articleLink": article["url"],
-            "imageUrl": article["image_url"],
-            "source": article["author"] or article["source_name"],
-            "timestamp": article["published_at"],
-            "category": article["category"][0] if article["category"] else "general",
-        }
-        
-        # Translate if needed
-        if language.lower() != "english":
-            news_item["title"] = translate_text(article["title"], language)
-            news_item["content"] = translate_text(article["content"], language)
-            news_item["language"] = language
-            
-        result.append(news_item)
-    
-    return result
+    # Json Payload for my request
+    payloed_content = {
+        'source': 'en',
+        'q': article['content'],
+        'target': language
+    }
+
+    payloed_title = {
+        'source': 'en',
+        'q': article['title'],
+        'target': language
+    }
+    response_content = requests.post('http://localhost:5000/translate', headers=headers, json=payloed_content)
+    response_title = requests.post('http://localhost:5000/translate', headers=headers, json=payloed_title)
+    if response_content.status_code == 200 and response_title.status_code == 200:
+        article['title'] = response_title.json().get('translatedText', article['title'])
+        article['content'] = response_content.json().get('translatedText', article['content'])
+    else:
+        print(f"Error: {response_content.status_code}, {response_content.text}")
+        article['title'] = article['title']
+        article['content'] = article['content']
+
+    return article

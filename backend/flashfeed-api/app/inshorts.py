@@ -72,37 +72,8 @@ def getNews(category, count):
                 'category': news['category_names'],
             }
             filtered_news.append(newsObject)
-    print(get_available_categories())
     return {
         'success': True,
         'category': category,
         'data': filtered_news
-    }
-
-def get_available_categories():
-    url = 'https://inshorts.com/api/en/news?category=all_news&max_limit=1000000000000000000&include_card_data=true'
-    response = requests.get(url, headers=headers)
-
-    try:
-        news_data = response.json()['data']['news_list']
-    except Exception as e:
-        print(response.text)
-        return {
-            'success': False,
-            'error': 'Failed to fetch data from Inshorts'
-        }
-
-    # Set to store unique categories
-    all_categories = set()
-    
-    # Extract all categories from news items
-    for entry in news_data:
-        news = entry['news_obj']
-        categories = news.get('category_names', [])
-        for category in categories:
-            all_categories.add(category.lower())
-    
-    return {
-        'success': True,
-        'categories': sorted(list(all_categories))
     }

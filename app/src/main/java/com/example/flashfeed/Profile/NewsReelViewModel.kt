@@ -66,20 +66,7 @@ class NewsReelViewModel(application: Application) : AndroidViewModel(application
             savedNewsMap[newsId] = !currentLiked
 
             // Get the corresponding article
-            val article = newsList.find { it.id.toString() == newsId }
 
-            if (article != null) {
-                if (!currentLiked) {
-                    // Save to database when liked
-                    val savedReel = SavedReelEntity.fromNewsArticle(article)
-                    savedReelDao.insertSavedReel(savedReel)
-                    Log.d("NewsReelViewModel", "Saved reel to database: $newsId")
-                } else {
-                    // Remove from database when unliked
-                    savedReelDao.removeSavedReel(newsId)
-                    Log.d("NewsReelViewModel", "Removed reel from database: $newsId")
-                }
-            }
         }
     }
 

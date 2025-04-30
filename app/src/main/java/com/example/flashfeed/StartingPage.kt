@@ -1,5 +1,6 @@
 package com.example.flashfeed
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -22,6 +23,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.flashfeed.ui.theme.FlashFeedTheme
 import kotlinx.coroutines.delay
 
+@SuppressLint("CustomSplashScreen")
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +43,7 @@ fun SplashScreen() {
     val composition = rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.splash))
 
     LaunchedEffect(key1 = true) {
-        delay(2500)
+        delay(650)
         context.startActivity(Intent(context, MainActivity::class.java))
         if (context is ComponentActivity) {
             context.finish()

@@ -110,17 +110,17 @@ fun NewsReelScreen(
     LaunchedEffect(pagerState.currentPage) {
         currentVisiblePage = pagerState.currentPage
         if (!isAutoScrolling) {
-            Log.d("Pagination", "Fetching more news at page: $currentVisiblePage")
             Log.d("Battery", "Battery percentage: $batteryPct")
             Log.d("Network Type", "Type: $networkType")
-            val articlesToFetch = if (((batteryPct != null && batteryPct < 30f ) || (networkType == "cellular"))&& newsList.size - currentVisiblePage < 3) {
-                newsList.size + 3 // Load 3 articles if battery < 30%
-            } else if (newsList.size - currentVisiblePage < 5) {
-                newsList.size + 10 // Default: load 10 articles
+            if (((batteryPct != null && batteryPct < 30f ) || (networkType == "cellular")) && newsList.size - currentVisiblePage < 3) {
+                Log.d("Pagination", "Not 3")
+                viewModel.fetchNews(category, newsList.size + 3, language.toString(), false)
+            } else if (((batteryPct != null && batteryPct >= 30f ) && (networkType == "wifi")) && newsList.size - currentVisiblePage < 5) {
+                Log.d("Pagination", "Not 10")
+                viewModel.fetchNews(category, newsList.size + 10, language.toString(), false)
             } else {
                 newsList.size // No need to load more
             }
-            viewModel.fetchNews(category, articlesToFetch, language.toString(), false)
         }
     }
 
@@ -221,15 +221,15 @@ fun NewsReelScreen(
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Text(
-                    text = "# ${news.title}",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(start = 10.dp)
+                    text = "${news.source} • ${news.timestamp}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                 )
                 Text(
-                    text = "${news.source} • ${news.timestamp}",
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                    text = news.title,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(bottom = 10.dp)
                 )
             }
 

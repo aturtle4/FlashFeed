@@ -31,7 +31,7 @@ class NewsService:
                 "image_url": news.get("image_url", ""),
                 "published_at": news.get("created_at", 0),
                 "category": news.get("category_names", []),
-                "source_name": news.get("source_name", "Inshorts")
+                "source_name": news.get("source_name", "FlashFeed")
             }
             articles.append(article)
         return articles

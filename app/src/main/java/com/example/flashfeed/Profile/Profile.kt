@@ -326,7 +326,7 @@ fun LangSelector(
 ) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
-    val languages = listOf("English" to "en", "हिन्दी" to "hi", "বাংলা" to "bn", "اردو" to "ar")
+    val languages = listOf("English" to "en", "हिन्दी" to "hi", "বাংলা" to "bn", "اردو" to "ur")
     val currentLanguage = languages.find { it.second == accountInfo?.lang }?.first ?: "English"
 
     // Add UserPreferencesViewModel

@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 sqlalchemy
+requests
 pydantic
 passlib[bcrypt]
 python-jose

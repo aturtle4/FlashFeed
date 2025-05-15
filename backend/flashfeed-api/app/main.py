@@ -7,6 +7,4 @@ from .news import router as news_router
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-app.include_router(auth_router)
-app.include_router(user_router)
 app.include_router(news_router)

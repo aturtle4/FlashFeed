@@ -19,7 +19,7 @@ interface NewsAPI {
 
 object RetrofitInstance {
     private val retrofit = Retrofit.Builder()
-        .baseUrl("http://flashfeed.roamify.tech/")
+        .baseUrl("https://flashfeed-go5j.onrender.com")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 

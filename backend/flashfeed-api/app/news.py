@@ -1,8 +1,5 @@
 from fastapi import APIRouter, Query, Depends
 import requests
-from .utils import translate_text
-from . import models
-from .utils import get_current_user
 from .data import NewsService  # Import the NewsService class from new_test.py
 
 router = APIRouter()

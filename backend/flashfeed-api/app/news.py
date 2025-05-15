@@ -15,16 +15,25 @@ def fetch_news(category: str, initial: str, count: int = Query(..., le=25), lang
     # Determine which method to call based on category
     offset = 0 if initial == "true" else count
     limit = count
-    
+
+    if language.lower() == "english":
+        language = "en"
+    elif language.lower() == "hindi":
+        language = "hi"
+    elif language.lower() == "bengali":
+        language = "bn"
+    elif language.lower() == "urdu":
+        language = "ur"
+
     if category.lower() == "all":
         news_response = news_service.get_all_news(offset, limit)
     elif category.lower() == "top":
         news_response = news_service.get_top_news(offset, limit)
     elif category.lower() == "trending":
-        news_response = news_service.get_trending_news(offset, limit)
+        news_response = news_service.get_trending_news(offset, limit, language)
     else:
         # For specific categories, use get_topic_news
-        news_response = news_service.get_topic_news(category.lower(), offset, limit)
+        news_response = news_service.get_topic_news(category.lower(), offset, limit, language)
     
     if not news_response or "articles" not in news_response:
         return {"error": "Failed to fetch news", "details": "Unable to retrieve articles"}
@@ -52,8 +61,8 @@ def fetch_news(category: str, initial: str, count: int = Query(..., le=25), lang
         }
         
         # Translate if needed
-        if language.lower() != "english":
-            news_item = translate_text(news_item, language)
+        # if language.lower() != "english":
+        #     news_item = translate_text(news_item, language)
             
         result.append(news_item)
     

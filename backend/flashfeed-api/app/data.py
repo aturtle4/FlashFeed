@@ -107,9 +107,9 @@ class NewsService:
             article["hash_id"] = self.create_uuid(article["title"], article["content"])
         return {"count": len(top_news_response), "articles": top_news_response}
     
-    def get_trending_news(self, offset, limit):
+    def get_trending_news(self, offset, limit, language):
         # Get trending news
-        response = requests.get(f"{self.read_api_base_url}/en/v4/news/trending", headers=self.headers)
+        response = requests.get(f"{self.read_api_base_url}/{language}/v4/news/trending", headers=self.headers)
         news_list_meta = response.json()
         
         # Extract news IDs
@@ -151,7 +151,7 @@ class NewsService:
         
         return {"count": len(all_topics), "topics": all_topics}
     
-    def get_topic_news(self, topic, offset, limit):
+    def get_topic_news(self, topic, offset, limit, language):
         max_page_limit = (offset + limit + 19) // 20  # Equivalent to ceil((offset + limit) / 20)
         
         topic_news_items = []
@@ -163,7 +163,7 @@ class NewsService:
                 "max_limit": 20,
                 "page": i
             }
-            response = requests.get(f"{self.search_api_base_url}/en/v3/news_tag_search", 
+            response = requests.get(f"{self.search_api_base_url}/{language}/v3/news_tag_search", 
                                   params=params, headers=self.headers)
             topic_news = response.json()
             
@@ -191,7 +191,7 @@ class NewsService:
                 "max_limit": 20,
                 "page": i
             }
-            response = requests.get(f"{self.search_api_base_url}/en/v3/news_search", 
+            response = requests.get(f"{self.search_api_base_url}/{language}/v3/news_search", 
                                   params=params, headers=self.headers)
             searched_news = response.json()
             
